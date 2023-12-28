@@ -34,13 +34,19 @@ registered_users:
 
 # Play
 To Play a game of Bristol, launch with `bristol -p`, followed by the name of each player participating (1-9 players supported)
-`bristol -p Player1 Player2 Player3 ...`
+```
+bristol -p Player1 Player2 Player3 ...
+```
 
 To Play a test game that sends mingle and symptom information to the CLI instead of SMS messages, append `-t` (users will still need to be in `registration.yml`
-`bristol -p Player1 Player2 Player3 -t`
+```
+bristol -p Player1 Player2 Player3 -t
+```
 
 You can adjust the length of the goal (ie. the number of spaces a cart has to move in order to exit the city) with the `-f` flag. Default is 17.
-`bristol -p Player1 Player2 Player3 -f 10.`
+```
+bristol -p Player1 Player2 Player3 -f 10.
+```
 
 # Rules
 In Bristol 1350, you are a peasant trying to escape the city during the height of the Black Plague. You are randomly assigned into 1 of 3 carts and given two status conditions at the beginning of the game. During each turn, 6 dice will be rolled. Your cart will move a total number of spaces equal to the number of dice rolled matching your carts color. If you are in a cart where two of the matching dice are rats, that means your cart will mingle at the end of the turn. You want to keep mingling to a minimum, as it will increase your chances of developing the plague! You win if you escape Bristol plague-free. 
