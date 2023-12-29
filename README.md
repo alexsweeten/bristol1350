@@ -17,7 +17,7 @@ python -m pip install .
 # Setup Twilio
 In order to send text messages to users, you must have a functioning [Twilio account](https://login.twilio.com/u/signup?state=hKFo2SA4d09LV1BLM3lsNlFINXNfQU1oVWhzSFJ5Q1RnbGlNVaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIFptY1F6bmp6bVJ4UWw2TVRtemNkZk1TVktCZDF5TG9Vo2NpZNkgTW05M1lTTDVSclpmNzdobUlKZFI3QktZYjZPOXV1cks). As of December 2023, Twilio gives all new users $15 in free credits, enough for a bunch of free games.
 
-Once registered for a Twilio account, you will need to add the account SID and authorization token into `registration.yml`
+Once registered for a Twilio account, you will need to add your Twilio account SID and authorization token into `registration.yml`:
 
 ```
 twilio_info:
