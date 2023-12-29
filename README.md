@@ -8,6 +8,8 @@ If you're unfamiliar with how to play, you can view the official [rules here](ht
 
 ![Screenshot of the game](images/gui_screenshot.png)
 
+![Screenshot of SMS messaging](images/whatsapp_twilio.png)
+
 # Installation
 ```
 git clone https://github.com/alexsweeten/bristol1350.git
