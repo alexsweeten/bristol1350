@@ -1,6 +1,7 @@
 # Bristol 1350
-#### Disclaimer: I am not affiliated with Facade Games in any way.  
-[Bristol 1350](https://facadegames.com/products/bristol-1350) is a big hit in the Sweeten household, and we always play a few games during family get togethers. During the holiday season of 2023, I forgot to bring a copy of the game 🤦. This repo is the result of coding the game of Bristol so that the Sweeten household would have a Merry Christmas and a Happy New Year.
+#### Disclaimer: This is not an official implementation!
+
+[Bristol 1350](https://facadegames.com/products/bristol-1350) is a big hit in the Sweeten household, and we always play a few games during family get togethers. During the holiday season of 2023, I forgot to bring a copy of the game 🤦 This repo is the result of coding the game of Bristol so that the Sweeten household would have a Merry Christmas and a Happy New Year.
 
 If you're unfamiliar with how to play, you can view the official [rules here](https://gamers-hq.de/media/pdf/60/66/e2/Bristol_PnP_Rules_1.pdf). Gameplay consists of a command line interpreter, which announces game updates and allows users to enter input commands, as well as a GUI showing the cart progress and dice rolling, rendered using [tkinter](https://docs.python.org/3/library/tkinter.html). Values that are kept secret from other players, such as symptoms and remedy cards, are sent via text message to all registered players mobile devices. This is done using [Twilio](https://login.twilio.com/u/signup?state=hKFo2SA4d09LV1BLM3lsNlFINXNfQU1oVWhzSFJ5Q1RnbGlNVaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIFptY1F6bmp6bVJ4UWw2TVRtemNkZk1TVktCZDF5TG9Vo2NpZNkgTW05M1lTTDVSclpmNzdobUlKZFI3QktZYjZPOXV1cks).
 
@@ -49,7 +50,7 @@ bristol -p Player1 Player2 Player3 -f 10.
 ```
 
 # Rules
-In Bristol 1350, you are a peasant trying to escape the city during the height of the Black Plague. You are randomly assigned into 1 of 3 carts and given two status conditions at the beginning of the game. During each turn, 6 dice will be rolled. Your cart will move a total number of spaces equal to the number of dice rolled matching your carts color. If you are in a cart where two of the matching dice are rats, that means your cart will mingle at the end of the turn. You want to keep mingling to a minimum, as it will increase your chances of developing the plague! You win if you escape Bristol plague-free. 
+In Bristol 1350, you are a peasant trying to escape the city during the height of the Black Plague. You are randomly assigned into 1 of 3 carts and given two status conditions at the beginning of the game. If at any point in the game, your two status conditions total 6 or higher, you have the plague! During each turn, 6 dice will be rolled. Your cart will move a total number of spaces equal to the number of dice rolled matching your carts color. If you are in a cart where two of the matching dice are rats, that means your cart will mingle at the end of the turn. You want to keep mingling to a minimum, as it will increase your chances of developing the plague! You win if you escape Bristol plague-free. 
 
 ## Actions
 - (R) Reroll Dice: You can reroll up to 2 dice.
