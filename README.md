@@ -21,10 +21,12 @@ In order to send text messages to users, you must have a functioning [Twilio acc
 
 Once registered for a Twilio account, you will need to add your Twilio account SID and authorization token into `registration.yml`:
 
+![](images/twilio_sid.png)
+
 ```
 twilio_info:
-  account_sid: 'ACf734ACf73ACf73ACf73ACf73ACf73'
-  auth_token: '432ed5c91432ed5c915432ed5c915432'
+  account_sid: <YOUR_SID_HERE>
+  auth_token: <YOUR_TOKEN_HERE>
 ```
 
 Finally, you will need to add each players name and phone number into `registration.yml`
