@@ -70,3 +70,4 @@ In Bristol 1350, you are a peasant trying to escape the city during the height o
 
 # Known Bugs
 - Carts can currently hold >3 people.
+- In carts that die from the plague, one person ends up surviving.
