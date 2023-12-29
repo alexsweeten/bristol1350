@@ -497,57 +497,80 @@ class Dice:
             else:
                 tmp = True
         if index1 == 1:
+            tmp3 = self.dice1_result
             self.dice1 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice1)
+            print(f"\n{tmp3} -> {self.dice1_result}\n")
         elif index1 == 2:
+            tmp3 = self.dice2_result
             self.dice2 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice2)
+            print(f"\n{tmp3} -> {self.dice2_result}\n")
         elif index1 == 3:
+            tmp3 = self.dice3_result
             self.dice3 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice3)
+            print(f"\n{tmp3} -> {self.dice3_result}\n")
         elif index1 == 4:
+            tmp3 = self.dice4_result
             self.dice4 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice4)
+            print(f"\n{tmp3} -> {self.dice4_result}\n")
         elif index1 == 5:
+            tmp3 = self.dice5_result
             self.dice5 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice5)
+            print(f"\n{tmp3} -> {self.dice5_result}\n")
         elif index1 == 6:
+            tmp3 = self.dice6_result
             self.dice6 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice6)
+            print(f"\n{tmp3} -> {self.dice6_result}\n")
 
         if index2 == None:
             o = 9
         elif index2 == 1:
+            tmp3 = self.dice1_result
             self.dice1 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice1)
+            print(f"\n{tmp3} -> {self.dice1_result}\n")
         elif index2 == 2:
+            tmp3 = self.dice2_result
             self.dice2 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice2)
+            print(f"\n{tmp3} -> {self.dice2_result}\n")
         elif index2 == 3:
+            tmp3 = self.dice3_result
             self.dice3 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice3)
+            print(f"\n{tmp3} -> {self.dice3_result}\n")
         elif index2 == 4:
+            tmp3 = self.dice4_result
             self.dice4 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice4)
+            print(f"\n{tmp3} -> {self.dice4_result}\n")
         elif index2 == 5:
+            tmp3 = self.dice5_result
             self.dice5 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice5)
+            print(f"\n{tmp3} -> {self.dice5_result}\n")
         elif index2 == 6:
+            tmp3 = self.dice6_result
             self.dice6 = random.randint(1, 6)
             self.updateResults()
             to_return.append(self.dice6)
-        print(to_return)
+            print(f"\n{tmp3} -> {self.dice6_result}\n")
         return to_return
 
 # Main board class
@@ -1613,7 +1636,7 @@ class Board:
 
     def mingle(self, cart, args, sid, token):
         supply = []
-        new_supply = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4]
+        new_supply = [1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4]
         random.shuffle(new_supply)
         if cart == 1:
             i = 0
@@ -2082,7 +2105,6 @@ def parse_args():
 
 def introsequence(args, sid, token):
     registered_users = read_yaml_file(args.registered)["registered_users"]
-    print(registered_users)
     ascii_art = """
   ____       _     _        _   __ ____  _____  ___  
  |  _ \     (_)   | |      | | /_ |___ \| ____|/ _ \ 
@@ -2346,7 +2368,7 @@ def main():
         print(
             f"(1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
         )
-        
+
         game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
         game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
         game.update_dice_value(status=int(initial_roll.dice3),die_num=3)

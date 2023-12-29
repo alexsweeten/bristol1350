@@ -1,0 +1,7 @@
+twilio_info:
+  account_sid: 'ABCABCBABABCBABCBACBABACBABCBAB'
+  auth_token: '432e432e432e432e432e432e432e432e'
+
+registered_users:
+  Player1: '5555555555'
+  Player2: '6666666666'
