@@ -52,7 +52,16 @@ bristol -p Player1 Player2 Player3 -f 10.
 ```
 
 # Rules
-In Bristol 1350, you are a peasant trying to escape the city during the height of the Black Plague. You are randomly assigned into 1 of 3 carts and given two status conditions at the beginning of the game. If at any point in the game, your two status conditions total 6 or higher, you have the plague! During each turn, 6 dice will be rolled. Your cart will move a total number of spaces equal to the number of dice rolled matching your carts color. If you are in a cart where two of the matching dice are rats, that means your cart will mingle at the end of the turn. You want to keep mingling to a minimum, as it will increase your chances of developing the plague! You win if you escape Bristol plague-free. 
+In Bristol 1350, you are a peasant trying to escape the city during the height of the Black Plague. At the start of the game, you are randomly assigned into 1 of 3 carts and given 2 status conditions. Your objective is to escape in your cart from Bristol plague-free. If at any point your two status conditions total 6 or higher, you have the plague! 
+
+During each turn, 6 dice will be rolled. Your cart will move a total number of spaces equal to the number of dice rolled matching your carts color. If you are in a cart where two of the matching dice are rats, that means your cart will mingle at the end of the turn. You want to keep mingling to a minimum, as it will increase your chances of developing the plague! 
+
+There are some differences between this implementation, and the official [rules here](https://gamers-hq.de/media/pdf/60/66/e2/Bristol_PnP_Rules_1.pdf):
+
+- There are no special character abilities (to include in a future update)
+- Remedy cards only contain 1 remedy, instead of a choice of 2.
+- Leeches and Pomander are not included in the game (to include in a future update).
+- Turkey is a new remedy: It allows the user to reroll 4 dice instead of the standard 2.
 
 ## Actions
 - (R) Reroll Dice: You can reroll up to 2 dice.
@@ -72,4 +81,6 @@ In Bristol 1350, you are a peasant trying to escape the city during the height o
 
 # Known Bugs
 - Carts can currently hold >3 people.
-- In carts that die from the plague, one person ends up surviving.
+- Jumping to a full cart doesn't swap first of second cart with last of first cart.
+- In carts that die from the plague once reaching the end, one person ends up surviving.
+- When elbowing people, people who are behind you can respond with a whip.
