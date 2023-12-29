@@ -1635,27 +1635,15 @@ class Board:
                     return True
 
     def mingle(self, cart, args, sid, token):
-        supply = []
-        new_supply = [1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4]
-        random.shuffle(new_supply)
+        new_supply = [1,2,3,4]
         if cart == 1:
-            i = 0
             for character in self.cart1:
-                supply.append(character.status1)
-                supply.append(character.status2)
-                i += 0
-            # Shuffle cards, deal 2 to player
-            supply.append(new_supply[i])
-            random.shuffle(supply)
-
-            for character in self.cart1:
-                character.status1 = supply[-1]
-                supply.pop(-1)
-                character.status2 = supply[-1]
-                supply.pop(-1)
+                new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
+                character.status1 = new_symptoms[0]
+                character.status2 = new_symptoms[1]
                 character.updateStatement()
                 character.increaseMingleCount()
-                if args.text:
+                if not args.test:
                     print(
                         f"{character.name}, please check your phone for your updated symptoms."
                     )
@@ -1670,23 +1658,13 @@ class Board:
                     print(character.name, character.plague_statement)
 
         elif cart == 2:
-            i = 0
             for character in self.cart2:
-                supply.append(character.status1)
-                supply.append(character.status2)
-                i += 1
-            # Shuffle cards, deal 2 to player
-            supply.append(new_supply[i])
-            random.shuffle(supply)
-
-            for character in self.cart2:
-                character.status1 = supply[-1]
-                supply.pop(-1)
-                character.status2 = supply[-1]
-                supply.pop(-1)
+                new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
+                character.status1 = new_symptoms[0]
+                character.status2 = new_symptoms[1]
                 character.updateStatement()
                 character.increaseMingleCount()
-                if args.text:
+                if not args.test:
                     print(
                         f"{character.name}, please check your phone for your updated symptoms."
                     )
@@ -1701,22 +1679,13 @@ class Board:
                     print(character.name, character.plague_statement)
 
         elif cart == 3:
-            i = 0
             for character in self.cart3:
-                supply.append(character.status1)
-                supply.append(character.status2)
-                i += 1
-            # Shuffle cards, deal 2 to player
-            supply.append(new_supply[i])
-            random.shuffle(supply)
-            for character in self.cart3:
-                character.status1 = supply[-1]
-                supply.pop(-1)
-                character.status2 = supply[-1]
-                supply.pop(-1)
+                new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
+                character.status1 = new_symptoms[0]
+                character.status2 = new_symptoms[1]
                 character.updateStatement()
                 character.increaseMingleCount()
-                if args.text:
+                if not args.test:
                     print(
                         f"{character.name}, please check your phone for your updated symptoms."
                     )
@@ -1805,6 +1774,7 @@ class Character:
         self.remedycard3 = None
         self.currentRemedyTotal = 0
         self.numMingles = 0
+        self.charactertype = None
 
         self.remedy_Dictionary = {
             1: "Arsenic",
@@ -1821,6 +1791,9 @@ class Character:
             4: "Prevent someone from jumping into your cart, elbowing past you, or pushing you off your cart. Use on another players turn.",
             5: "Used to reroll 4 dice, instead of the standard 2.",
         }
+
+    def getCharacterType(self, charac):
+        self.charctertype = charac
 
     def increaseMingleCount(self):
         self.numMingles += 1
@@ -1945,9 +1918,9 @@ class Character:
             return False
 
         # Text current remedy card status.
-        remedy_message = f"You received the {self.remedy_Dictionary[new_card]} remedy: {self.remedy_Description[new_card]}"
+        remedy_message = f"you received the {self.remedy_Dictionary[new_card]} remedy: {self.remedy_Description[new_card]}"
         remedy_message = remedy_message + f"\n\n {total_remedy_message}"
-        if args.text:
+        if not args.test:
             send_remedy_message(
                 name=self.name,
                 phone_number=self.phone_number,
@@ -1961,33 +1934,33 @@ class Character:
 
     def updateStatement(self):
         if self.status1 == 1:
-            self.plague_statement = "your symptoms are a headache (1) & "
+            self.plague_statement = "Your symptoms are a headache (1) & "
         elif self.status1 == 2:
-            self.plague_statement = "your symptoms are chills (2) & "
+            self.plague_statement = "Your symptoms are chills (2) & "
         elif self.status1 == 3:
-            self.plague_statement = "your symptoms are a cough (3) & "
+            self.plague_statement = "Your symptoms are a cough (3) & "
         elif self.status1 == 4:
-            self.plague_statement = "your symptoms are buboes (4) & "
+            self.plague_statement = "Your symptoms are buboes (4) & "
         if self.status2 == 1:
             self.plague_statement = self.plague_statement + "a headache (1)"
             if self.status1 == 1:
-                self.plague_statement = "your symptoms are a killer migraine (1 + 1)"
+                self.plague_statement = "Your symptoms are a killer migraine (1 + 1)"
         elif self.status2 == 2:
             self.plague_statement = self.plague_statement + "chills (2)"
             if self.status1 == 2:
                 self.plague_statement = (
-                    "your symptoms are being chillier than a snowman (2 + 2)"
+                    "Your symptoms are being chillier than a snowman (2 + 2)"
                 )
         elif self.status2 == 3:
             self.plague_statement = self.plague_statement + "a cough (3)"
             if self.status1 == 3:
                 self.plague_statement = (
-                    "your symptoms are having a horrendous whooping cough (3 + 3)"
+                    "Your symptoms are having a horrendous whooping cough (3 + 3)"
                 )
         elif self.status2 == 4:
             self.plague_statement = self.plague_statement + "buboes (4)"
             if self.status1 == 4:
-                self.plague_statement = "your symptoms are being so bubonic that you are literally green goo (4 + 4)"
+                self.plague_statement = "Your symptoms are being so bubonic that you are literally green goo (4 + 4)"
         if self.status1 + self.status2 >= 6:
             # Redo it my guy
             self.plague_status = True
@@ -2080,7 +2053,7 @@ def parse_args():
     """Parse arguments from the command line."""
     parser = argparse.ArgumentParser(add_help=False)
 
-    parser.add_argument("-t", "--text", action="store_true", help="Play using text")
+    parser.add_argument("-t", "--test", action="store_true", help="Test game. Sets symptoms and remedy info to screen.")
     parser.add_argument("-d", "--demo", action="store_true", help="Preset a demo game")
     parser.add_argument("-p", "--players", nargs="+", help="People playing")
     parser.add_argument(
@@ -2092,6 +2065,7 @@ def parse_args():
         default=os.path.abspath(os.path.join(__file__, "../../../registration.yml")),
         help="Config file containing list of registered users.",
     )
+    parser.add_argument("-c", "--character", action="store_true", help="Play using characters, wach with their own special power")
     parser.add_argument("-v", "--version", action="store_true", help="Show version")
 
     args = parser.parse_args()
@@ -2120,7 +2094,8 @@ def introsequence(args, sid, token):
         for i in range(len(args.players)):
             # Check if valid player
             if args.players[i] not in registered_users:
-                print(f"{args.players[i]} is not registered!")
+                print(f"{args.players[i]} is not registered!\n")
+                print(f"Unable to proceed with the game. Please register {args.players[i]} and try again.")
                 sys.exit(6)
             list_of_characters.append("d")
             list_of_characters[i] = Character(
@@ -2128,7 +2103,7 @@ def introsequence(args, sid, token):
                 phone_number=registered_users[args.players[i]],
             )
             list_of_characters[i].generateStartStatus(args)
-            if args.text:
+            if not args.test:
                 print(
                     f"\n{args.players[i]}, you have been sent a text message with your symptoms!"
                 )
@@ -2174,21 +2149,21 @@ def EmeraldAction(board, character, initial_roll, game, args, account_sid, auth_
             )
 
         if player_input.lower() == "e":
-            if board.elbow(character, args.text, account_sid, auth_token) == True:
+            if board.elbow(character, args.test, account_sid, auth_token) == True:
                 finished = True
                 board.displayCarts(game, args)
             else:
                 finished = False
 
         if player_input.lower() == "j":
-            if board.jump(character, args.text, account_sid, auth_token) == True:
+            if board.jump(character, args.test, account_sid, auth_token) == True:
                 finished = True
                 board.displayCarts(game, args)
             else:
                 finished = False
 
         if player_input.lower() == "p":
-            if board.push(character, args.text, account_sid, auth_token) == True:
+            if board.push(character, args.test, account_sid, auth_token) == True:
                 finished = True
                 board.displayCarts(game, args)
             else:
@@ -2420,7 +2395,7 @@ def main():
                                     auth_token=auth_token
                                 )
                                 character.removeCard(
-                                    3, args.text, account_sid, auth_token
+                                    3, args.test, account_sid, auth_token
                                 )
                                 finished = False
                             else:
@@ -2434,21 +2409,21 @@ def main():
                         finished = False
 
                 if player_input.lower() == "e":
-                    if board.elbow(character, args.text, account_sid, auth_token) == True:
+                    if board.elbow(character, args.test, account_sid, auth_token) == True:
                         finished = True
                         board.displayCarts(game, args)
                     else:
                         finished = False
 
                 if player_input.lower() == "j":
-                    if board.jump(character, args.text, account_sid, auth_token) == True:
+                    if board.jump(character, args.test, account_sid, auth_token) == True:
                         finished = True
                         board.displayCarts(game, args)
                     else:
                         finished = False
 
                 if player_input.lower() == "p":
-                    if board.push(character, args.text, account_sid, auth_token) == True:
+                    if board.push(character, args.test, account_sid, auth_token) == True:
                         finished = True
                         board.displayCarts(game, args)
                     else:
@@ -2476,7 +2451,7 @@ def main():
                         game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
                         game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
                         game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-                        character.removeCard(5, args.text, account_sid, auth_token)
+                        character.removeCard(5, args.test, account_sid, auth_token)
                         finished = True
                     else:
                         print(
@@ -2509,7 +2484,7 @@ def main():
                             print(getlock1, getlock2)
                             game.update_lock_symbol(int(getlock1), True, False)
                             game.update_lock_symbol(int(getlock2), True, False)
-                            character.removeCard(1, args.text,account_sid, auth_token)
+                            character.removeCard(1, args.test, account_sid, auth_token)
                             finished = False
                         else:
                             print(
@@ -2676,7 +2651,7 @@ def main():
                                                         game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
                                                         game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
                                                         game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-                                                character.removeCard(2, args.text, account_sid, auth_token)
+                                                character.removeCard(2, args.test, account_sid, auth_token)
                                                 finished = True
                                             else:
                                                 print(
