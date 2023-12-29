@@ -1,4 +1,3 @@
-# Bristol 1350
 ![](images/logo.png)
 #### Disclaimer: This is not an official implementation!
 
