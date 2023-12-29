@@ -1,11 +1,12 @@
 # Bristol 1350
+![](images/logo.png)
 #### Disclaimer: This is not an official implementation!
 
 [Bristol 1350](https://facadegames.com/products/bristol-1350) is a big hit in the Sweeten household, and we always play a few games during family get togethers. During the holiday season of 2023, I forgot to bring a copy of the game 🤦 This repo is the result of coding the game of Bristol so that the Sweeten household would have a Merry Christmas and a Happy New Year.
 
 If you're unfamiliar with how to play, you can view the official [rules here](https://gamers-hq.de/media/pdf/60/66/e2/Bristol_PnP_Rules_1.pdf). Gameplay consists of a command line interpreter, which announces game updates and allows users to enter input commands, as well as a GUI showing the cart progress and dice rolling, rendered using [tkinter](https://docs.python.org/3/library/tkinter.html). Values that are kept secret from other players, such as symptoms and remedy cards, are sent via text message to all registered players mobile devices. This is done using [Twilio](https://login.twilio.com/u/signup?state=hKFo2SA4d09LV1BLM3lsNlFINXNfQU1oVWhzSFJ5Q1RnbGlNVaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIFptY1F6bmp6bVJ4UWw2TVRtemNkZk1TVktCZDF5TG9Vo2NpZNkgTW05M1lTTDVSclpmNzdobUlKZFI3QktZYjZPOXV1cks).
 
-Add screenshot here
+![Screenshot of the game](images/gui_screenshot.png)
 
 # Installation
 ```
