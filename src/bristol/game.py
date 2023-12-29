@@ -38,6 +38,49 @@ class BristolGame:
 
         self.finishline = self.canvas.create_rectangle(700, 0, 720, 600, fill="red")
 
+        self.dice1 = self.canvas.create_rectangle(100,500,140,540, fill="cyan", outline="black")
+        self.dice2 = self.canvas.create_rectangle(160,500,200,540, fill="yellow", outline="black")
+        self.dice3 = self.canvas.create_rectangle(220,500,260,540, fill="cyan", outline="black")
+        self.dice4 = self.canvas.create_rectangle(280,500,320,540, fill="cyan", outline="black")
+        self.dice5 = self.canvas.create_rectangle(340,500,380,540, fill="pink", outline="black")
+        self.dice6 = self.canvas.create_rectangle(400,500,440,540, fill="cyan", outline="black")
+        self.dice1txt = self.canvas.create_text(
+            120, 520, text="🍏", font=("Arial", 18, "bold"), fill="black"
+        )
+        self.dice2txt = self.canvas.create_text(
+            180, 520, text="🍏", font=("Arial", 18, "bold"), fill="black"
+        )
+        self.dice3txt = self.canvas.create_text(
+            240, 520, text="🐀", font=("Arial", 18, "bold"), fill="black"
+        )
+        self.dice4txt = self.canvas.create_text(
+            300, 520, text="🐀", font=("Arial", 18, "bold"), fill="black"
+        )
+        self.dice5txt = self.canvas.create_text(
+            360, 520, text="🍏", font=("Arial", 18, "bold"), fill="black"
+        )
+        self.dice6txt = self.canvas.create_text(
+            420, 520, text="🐀", font=("Arial", 18, "bold"), fill="black"
+        )
+        self.dice1locktxt = self.canvas.create_text(
+            120, 570, text="✅", font=("Arial", 12, "bold"), fill="black"
+        )
+        self.dice2locktxt = self.canvas.create_text(
+            180, 570, text="✅", font=("Arial", 12, "bold"), fill="black"
+        )
+        self.dice3locktxt = self.canvas.create_text(
+            240, 570, text="✅", font=("Arial", 12, "bold"), fill="black"
+        )
+        self.dice4locktxt = self.canvas.create_text(
+            300, 570, text="✅", font=("Arial", 12, "bold"), fill="black"
+        )
+        self.dice5locktxt = self.canvas.create_text(
+            360, 570, text="✅", font=("Arial", 12, "bold"), fill="black"
+        )
+        self.dice6locktxt = self.canvas.create_text(
+            420, 570, text="✅", font=("Arial", 12, "bold"), fill="black"
+        )
+
     def update_rectangle_position(self, rectangle, amount):
         if rectangle == 1:
             self.canvas.coords(
@@ -67,6 +110,171 @@ class BristolGame:
         self.canvas.coords(
             self.finishline, 220 + (amount * 25), 0, 240 + (amount * 25), 600
         )
+
+    def update_lock_symbol(self,die_num, lock, busy):
+        if die_num == 1:
+            if lock:
+                self.canvas.itemconfig(self.dice1locktxt, text="❌")
+            elif busy:
+                self.canvas.itemconfig(self.dice1locktxt, text="🔄")
+            else:
+                self.canvas.itemconfig(self.dice1locktxt, text="✅")
+        if die_num == 2:
+            if lock:
+                self.canvas.itemconfig(self.dice2locktxt, text="❌")
+            elif busy:
+                self.canvas.itemconfig(self.dice2locktxt, text="🔄")
+            else:
+                self.canvas.itemconfig(self.dice2locktxt, text="✅")
+        if die_num == 3:
+            if lock:
+                self.canvas.itemconfig(self.dice3locktxt, text="❌")
+            elif busy:
+                self.canvas.itemconfig(self.dice3locktxt, text="🔄")
+            else:
+                self.canvas.itemconfig(self.dice3locktxt, text="✅")
+        if die_num == 4:
+            if lock:
+                self.canvas.itemconfig(self.dice4locktxt, text="❌")
+            elif busy:
+                self.canvas.itemconfig(self.dice4locktxt, text="🔄")
+            else:
+                self.canvas.itemconfig(self.dice4locktxt, text="✅")
+        if die_num == 5:
+            if lock:
+                self.canvas.itemconfig(self.dice5locktxt, text="❌")
+            elif busy:
+                self.canvas.itemconfig(self.dice5locktxt, text="🔄")
+            else:
+                self.canvas.itemconfig(self.dice5locktxt, text="✅")
+        if die_num == 6:
+            if lock:
+                self.canvas.itemconfig(self.dice6locktxt, text="❌")
+            elif busy:
+                self.canvas.itemconfig(self.dice6locktxt, text="🔄")
+            else:
+                self.canvas.itemconfig(self.dice6locktxt, text="✅")
+
+    def update_dice_value(self,status,die_num):
+        if die_num == 1:
+            if status == 1:
+                self.canvas.itemconfig(self.dice1txt, text="🍏")
+                self.canvas.itemconfig(self.dice1, fill="cyan")
+            elif status == 2:
+                self.canvas.itemconfig(self.dice1txt, text="🐀")
+                self.canvas.itemconfig(self.dice1, fill="cyan")
+            elif status == 3:
+                self.canvas.itemconfig(self.dice1txt, text="🍏")
+                self.canvas.itemconfig(self.dice1, fill="yellow")
+            elif status == 4:
+                self.canvas.itemconfig(self.dice1txt, text="🐀")
+                self.canvas.itemconfig(self.dice1, fill="yellow")
+            elif status == 5:
+                self.canvas.itemconfig(self.dice1txt, text="🍏")
+                self.canvas.itemconfig(self.dice1, fill="pink")
+            elif status == 6:
+                self.canvas.itemconfig(self.dice1txt, text="🐀")
+                self.canvas.itemconfig(self.dice1, fill="pink")
+
+        elif die_num == 2:
+            if status == 1:
+                self.canvas.itemconfig(self.dice2txt, text="🍏")
+                self.canvas.itemconfig(self.dice2, fill="cyan")
+            elif status == 2:
+                self.canvas.itemconfig(self.dice2txt, text="🐀")
+                self.canvas.itemconfig(self.dice2, fill="cyan")
+            elif status == 3:
+                self.canvas.itemconfig(self.dice2txt, text="🍏")
+                self.canvas.itemconfig(self.dice2, fill="yellow")
+            elif status == 4:
+                self.canvas.itemconfig(self.dice2txt, text="🐀")
+                self.canvas.itemconfig(self.dice2, fill="yellow")
+            elif status == 5:
+                self.canvas.itemconfig(self.dice2txt, text="🍏")
+                self.canvas.itemconfig(self.dice2, fill="pink")
+            elif status == 6:
+                self.canvas.itemconfig(self.dice2txt, text="🐀")
+                self.canvas.itemconfig(self.dice2, fill="pink")
+
+        elif die_num == 3:
+            if status == 1:
+                self.canvas.itemconfig(self.dice3txt, text="🍏")
+                self.canvas.itemconfig(self.dice3, fill="cyan")
+            elif status == 2:
+                self.canvas.itemconfig(self.dice3txt, text="🐀")
+                self.canvas.itemconfig(self.dice3, fill="cyan")
+            elif status == 3:
+                self.canvas.itemconfig(self.dice3txt, text="🍏")
+                self.canvas.itemconfig(self.dice3, fill="yellow")
+            elif status == 4:
+                self.canvas.itemconfig(self.dice3txt, text="🐀")
+                self.canvas.itemconfig(self.dice3, fill="yellow")
+            elif status == 5:
+                self.canvas.itemconfig(self.dice3txt, text="🍏")
+                self.canvas.itemconfig(self.dice3, fill="pink")
+            elif status == 6:
+                self.canvas.itemconfig(self.dice3txt, text="🐀")
+                self.canvas.itemconfig(self.dice3, fill="pink")
+
+        elif die_num == 4:
+            if status == 1:
+                self.canvas.itemconfig(self.dice4txt, text="🍏")
+                self.canvas.itemconfig(self.dice4, fill="cyan")
+            elif status == 2:
+                self.canvas.itemconfig(self.dice4txt, text="🐀")
+                self.canvas.itemconfig(self.dice4, fill="cyan")
+            elif status == 3:
+                self.canvas.itemconfig(self.dice4txt, text="🍏")
+                self.canvas.itemconfig(self.dice4, fill="yellow")
+            elif status == 4:
+                self.canvas.itemconfig(self.dice4txt, text="🐀")
+                self.canvas.itemconfig(self.dice4, fill="yellow")
+            elif status == 5:
+                self.canvas.itemconfig(self.dice4txt, text="🍏")
+                self.canvas.itemconfig(self.dice4, fill="pink")
+            elif status == 6:
+                self.canvas.itemconfig(self.dice4txt, text="🐀")
+                self.canvas.itemconfig(self.dice4, fill="pink")
+
+        elif die_num == 5:
+            if status == 1:
+                self.canvas.itemconfig(self.dice5txt, text="🍏")
+                self.canvas.itemconfig(self.dice5, fill="cyan")
+            elif status == 2:
+                self.canvas.itemconfig(self.dice5txt, text="🐀")
+                self.canvas.itemconfig(self.dice5, fill="cyan")
+            elif status == 3:
+                self.canvas.itemconfig(self.dice5txt, text="🍏")
+                self.canvas.itemconfig(self.dice5, fill="yellow")
+            elif status == 4:
+                self.canvas.itemconfig(self.dice5txt, text="🐀")
+                self.canvas.itemconfig(self.dice5, fill="yellow")
+            elif status == 5:
+                self.canvas.itemconfig(self.dice5txt, text="🍏")
+                self.canvas.itemconfig(self.dice5, fill="pink")
+            elif status == 6:
+                self.canvas.itemconfig(self.dice5txt, text="🐀")
+                self.canvas.itemconfig(self.dice5, fill="pink")
+
+        elif die_num == 6:
+            if status == 1:
+                self.canvas.itemconfig(self.dice6txt, text="🍏")
+                self.canvas.itemconfig(self.dice6, fill="cyan")
+            elif status == 2:
+                self.canvas.itemconfig(self.dice6txt, text="🐀")
+                self.canvas.itemconfig(self.dice6, fill="cyan")
+            elif status == 3:
+                self.canvas.itemconfig(self.dice6txt, text="🍏")
+                self.canvas.itemconfig(self.dice6, fill="yellow")
+            elif status == 4:
+                self.canvas.itemconfig(self.dice6txt, text="🐀")
+                self.canvas.itemconfig(self.dice6, fill="yellow")
+            elif status == 5:
+                self.canvas.itemconfig(self.dice6txt, text="🍏")
+                self.canvas.itemconfig(self.dice6, fill="pink")
+            elif status == 6:
+                self.canvas.itemconfig(self.dice6txt, text="🐀")
+                self.canvas.itemconfig(self.dice6, fill="pink")
 
 # Colors for dramatic CLI effects
 class bcolors:
@@ -1714,7 +1922,7 @@ class Character:
             return False
 
         # Text current remedy card status.
-        remedy_message = f"You recieved the {self.remedy_Dictionary[new_card]} remedy: {self.remedy_Description[new_card]}"
+        remedy_message = f"You received the {self.remedy_Dictionary[new_card]} remedy: {self.remedy_Description[new_card]}"
         remedy_message = remedy_message + f"\n\n {total_remedy_message}"
         if args.text:
             send_remedy_message(
@@ -2138,6 +2346,19 @@ def main():
         print(
             f"(1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
         )
+        
+        game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+        game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+        game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+        game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+        game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+        game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+        game.update_lock_symbol(1,False, False)
+        game.update_lock_symbol(2,False, False)
+        game.update_lock_symbol(3,False, False)
+        game.update_lock_symbol(4,False, False)
+        game.update_lock_symbol(5,False, False)
+        game.update_lock_symbol(6,False, False)
 
         for character in list_of_characters:
             finished = False
@@ -2217,7 +2438,7 @@ def main():
                 if player_input.lower() == "t":
                     if character.hasTurkey():
                         print("\nGobble gobble\n")
-                        # TODO: Hvae turkey unable to reroll locked arsenic dice. I'm too lazy to add that now
+                        # TODO: Have turkey unable to reroll locked arsenic dice. I'm too lazy to add that now
                         reroll1 = input("Select the first dice to reroll (1-6):")
                         reroll2 = input("Select the second dice to reroll (1-6):")
                         reroll3 = input("Select the second dice to reroll (1-6):")
@@ -2227,6 +2448,12 @@ def main():
                         print(
                             f"\nRerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}\n"
                         )
+                        game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                        game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                        game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                        game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                        game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                        game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
                         character.removeCard(5, args.text, account_sid, auth_token)
                         finished = True
                     else:
@@ -2256,6 +2483,10 @@ def main():
                             print(
                                 f"{character.name} has successfully locked dice {getlock1} and {getlock2}!"
                             )
+                            print("cheese")
+                            print(getlock1, getlock2)
+                            game.update_lock_symbol(int(getlock1), True, False)
+                            game.update_lock_symbol(int(getlock2), True, False)
                             character.removeCard(1, args.text,account_sid, auth_token)
                             finished = False
                         else:
@@ -2356,6 +2587,12 @@ def main():
                                     print(
                                         f"Rerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
                                     )
+                                    game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                    game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                    game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                    game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                    game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                    game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
 
                                     if character.hasRemedies():
                                         useChicken = input(
@@ -2373,6 +2610,12 @@ def main():
                                                 print(
                                                     f"Rerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
                                                 )
+                                                game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                                game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                                game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                                game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                                game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                                game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
                                                 useChicken2 = input(
                                                     f"Would you like to use a chicken to reroll these dice (2 rerolls remaining)? (y/n):"
                                                 )
@@ -2386,6 +2629,12 @@ def main():
                                                     print(
                                                         f"Rerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
                                                     )
+                                                    game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                                    game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                                    game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                                    game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                                    game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                                    game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
                                                     useChicken3 = input(
                                                         f"Would you like to use a chicken to reroll these dice (1 reroll remaining)? (y/n):"
                                                     )
@@ -2399,6 +2648,12 @@ def main():
                                                         print(
                                                             f"Rerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
                                                         )
+                                                        game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                                        game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                                        game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                                        game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                                        game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                                        game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
                                                 character.removeCard(2, args.text, account_sid, auth_token)
                                                 finished = True
                                             else:
@@ -2463,9 +2718,21 @@ def main():
                                     print(
                                         f"Rerolled dice to: {initial_roll.dice1_result}, {initial_roll.dice2_result}, {initial_roll.dice3_result}, {initial_roll.dice4_result}, {initial_roll.dice5_result}, {initial_roll.dice6_result}"
                                     )
+                                    game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                    game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                    game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                    game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                    game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                    game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
                                 else:
                                     finished = False
         print("Everyone has taken a turn!")
+        game.update_lock_symbol(1,False, True)
+        game.update_lock_symbol(2,False, True)
+        game.update_lock_symbol(3,False, True)
+        game.update_lock_symbol(4,False, True)
+        game.update_lock_symbol(5,False, True)
+        game.update_lock_symbol(6,False, True)
         time.sleep(1)
 
         tingle_mingle = initial_roll.checkMingling()
