@@ -14,6 +14,7 @@ from bristol.send_sms import (
 import tkinter as tk
 import yaml
 import os
+import toml
 
 # Tkinter GUI
 class BristolGame:
@@ -2071,7 +2072,7 @@ def parse_args():
     args = parser.parse_args()
 
     if args.version:
-        print(f"Bristol 1350: v0.1.0")  # Replace with your actual version
+        print(f"v{get_project_version()}")
         exit()
 
     return args
@@ -2303,6 +2304,22 @@ def checkifVictorious(board, result, game, args):
                 return False
     else:
         return False
+
+def get_project_version():
+    try:
+        with open('pyproject.toml', 'r') as file:
+            toml_content = toml.load(file)
+            # Check if 'tool.poetry' and 'version' exist in pyproject.toml
+            if 'tool' in toml_content and 'poetry' in toml_content['tool'] and 'version' in toml_content['tool']['poetry']:
+                return toml_content['tool']['poetry']['version']
+            elif 'project' in toml_content and 'version' in toml_content['project']:
+                return toml_content['project']['version']
+            else:
+                print("Version information not found in pyproject.toml.")
+                return None
+    except FileNotFoundError:
+        print("pyproject.toml not found.")
+        return None
 
 
 def main():
