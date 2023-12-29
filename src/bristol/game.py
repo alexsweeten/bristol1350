@@ -20,40 +20,40 @@ class BristolGame:
     def __init__(self, master):
         self.master = master
         self.master.title("Bristol 1350")
-        self.canvas = tk.Canvas(self.master, width=1400, height=600, bg="lightgray")
+        self.canvas = tk.Canvas(self.master, width=800, height=600, bg="lightgray")
         self.canvas.pack()
 
         self.rectangle1 = self.canvas.create_rectangle(50, 50, 250, 150, fill="cyan")
         self.text_in_rectangle1 = self.canvas.create_text(
-            100, 100, text="Lorem Ipsum", font=("Arial", 12), fill="black"
+            100, 100, text="Lorem Ipsum", font=("Arial", 14, "bold"), fill="black"
         )
         self.rectangle2 = self.canvas.create_rectangle(50, 200, 250, 300, fill="yellow")
         self.text_in_rectangle2 = self.canvas.create_text(
-            100, 250, text="Lorem Ipsum", font=("Arial", 12), fill="black"
+            100, 250, text="Lorem Ipsum", font=("Arial", 14, "bold"), fill="black"
         )
-        self.rectangle3 = self.canvas.create_rectangle(50, 350, 250, 450, fill="purple")
+        self.rectangle3 = self.canvas.create_rectangle(50, 350, 250, 450, fill="pink")
         self.text_in_rectangle3 = self.canvas.create_text(
-            100, 400, text="Lorem Ipsum", font=("Arial", 12), fill="black"
+            100, 400, text="Lorem Ipsum", font=("Arial", 14, "bold"), fill="black"
         )
 
-        self.finishline = self.canvas.create_rectangle(1200, 0, 1220, 600, fill="red")
+        self.finishline = self.canvas.create_rectangle(700, 0, 720, 600, fill="red")
 
     def update_rectangle_position(self, rectangle, amount):
         if rectangle == 1:
             self.canvas.coords(
-                self.rectangle1, 50 + (amount * 50), 50, 250 + (amount * 50), 150
+                self.rectangle1, 50 + (amount * 25), 50, 250 + (amount * 25), 150
             )
-            self.canvas.coords(self.text_in_rectangle1, 100 + (amount * 50), 100)
+            self.canvas.coords(self.text_in_rectangle1, 100 + (amount * 25), 100)
         elif rectangle == 2:
             self.canvas.coords(
-                self.rectangle2, 50 + (amount * 50), 200, 250 + (amount * 50), 300
+                self.rectangle2, 50 + (amount * 25), 200, 250 + (amount * 25), 300
             )
-            self.canvas.coords(self.text_in_rectangle2, 100 + (amount * 50), 250)
+            self.canvas.coords(self.text_in_rectangle2, 100 + (amount * 25), 250)
         elif rectangle == 3:
             self.canvas.coords(
-                self.rectangle3, 50 + (amount * 50), 350, 250 + (amount * 50), 450
+                self.rectangle3, 50 + (amount * 25), 350, 250 + (amount * 25), 450
             )
-            self.canvas.coords(self.text_in_rectangle3, 100 + (amount * 50), 400)
+            self.canvas.coords(self.text_in_rectangle3, 100 + (amount * 25), 400)
 
     def update_rectangle_txt(self, rectangle, txt):
         if rectangle == 1:
@@ -65,7 +65,7 @@ class BristolGame:
 
     def update_finish_line(self, amount):
         self.canvas.coords(
-            self.finishline, 220 + (amount * 50), 0, 240 + (amount * 50), 600
+            self.finishline, 220 + (amount * 25), 0, 240 + (amount * 25), 600
         )
 
 # Colors for dramatic CLI effects
@@ -586,7 +586,7 @@ class Board:
             self.cart1_priority = 1
             self.cart2_priority = 2
 
-    def push(self, character, txt):
+    def push(self, character, txt, account_sid, auth_token):
         # Check to make sure you are not at the back of the current cart.
         if character.cart == 1:
             if len(self.cart1) < 2:
@@ -623,15 +623,15 @@ class Board:
                                     + f"{self.cart1[-1].name} uses a whip to prevent being pushed!"
                                     + bcolors.RESET
                                 )
-                                self.cart1[-1].removeCard(4, txt)
+                                self.cart1[-1].removeCard(4, txt, account_sid, auth_token)
                                 return True
                             else:
                                 print(
-                                    f"Sorry {self.cart1[-1].name}, you don't appear to have a whip!"
+                                    f"\nSorry {self.cart1[-1].name}, you don't appear to have a whip!\n"
                                 )
                     print(
                         Fore.RED
-                        + f"{character.name} has kicked out {self.cart1[-1].name}! Super rude in the nude!"
+                        + f"\n{character.name} has kicked out {self.cart1[-1].name}! Super rude in the nude!\n"
                         + bcolors.RESET
                     )
 
@@ -712,17 +712,17 @@ class Board:
                                     + f"{self.cart2[-1].name} uses a whip to prevent being pushed!"
                                     + bcolors.RESET
                                 )
-                                self.cart2[-1].removeCard(4, txt)
+                                self.cart2[-1].removeCard(4, txt, account_sid, auth_token)
                                 return True
                             else:
                                 print(
                                     Fore.RED
-                                    + f"Sorry {self.cart2[-1].name}, you don't appear to have a whip!"
+                                    + f"\nSorry {self.cart2[-1].name}, you don't appear to have a whip!\n"
                                 )
                     print(
                         Fore.RED
                         + Style.BRIGHT
-                        + f"{character.name} has kicked out {self.cart2[-1].name}! Super rude in the nude!"
+                        + f"\n{character.name} has kicked out {self.cart2[-1].name}! Super rude in the nude!\n"
                         + bcolors.RESET
                     )
 
@@ -799,20 +799,20 @@ class Board:
                             if self.cart3[-1].hasWhip():
                                 print(
                                     Fore.GREEN
-                                    + f"{self.cart3[-1].name} uses a whip to prevent being pushed!"
+                                    + f"\n{self.cart3[-1].name} uses a whip to prevent being pushed!\n"
                                     + bcolors.RESET
                                 )
-                                self.cart3[-1].removeCard(4, txt)
+                                self.cart3[-1].removeCard(4, txt, account_sid, auth_token)
                                 return True
                             else:
                                 print(
-                                    f"Sorry {self.cart3[-1].name}, you don't appear to have a whip!"
+                                    f"\nSorry {self.cart3[-1].name}, you don't appear to have a whip!\n"
                                 )
 
                     print(
                         Fore.RED
                         + Style.BRIGHT
-                        + f"{character.name} has kicked out {self.cart3[-1].name}! Super rude in the nude!"
+                        + f"\n{character.name} has kicked out {self.cart3[-1].name}! Super rude in the nude!\n"
                         + bcolors.RESET
                     )
 
@@ -861,7 +861,7 @@ class Board:
                 else:
                     return False
 
-    def jump(self, character, txt):
+    def jump(self, character, txt, account_sid, auth_token):
         # Check if your character is the leader of the current cart.
         if character.cart == 1:
             position = self.cart1.index(character)
@@ -886,7 +886,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -916,7 +916,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -948,7 +948,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -978,7 +978,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1023,7 +1023,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1053,7 +1053,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1085,7 +1085,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1115,7 +1115,7 @@ class Board:
                                             + f"\n{booger.name}, used their whip on {character.name}. Jump DENIED!\n"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1160,7 +1160,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1190,7 +1190,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1222,7 +1222,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1252,7 +1252,7 @@ class Board:
                                             + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
                                             + bcolors.RESET
                                         )
-                                        booger.removeCard(4, txt)
+                                        booger.removeCard(4, txt, account_sid, auth_token)
                                         return True
                                     else:
                                         print(
@@ -1275,7 +1275,7 @@ class Board:
                 )
                 return False
 
-    def elbow(self, character, txt):
+    def elbow(self, character, txt, account_sid, auth_token):
         if character.cart == 1:
             if len(self.cart1) < 2:
                 print(
@@ -1304,7 +1304,7 @@ class Board:
                                         + f"{booger.name}, used their whip on {character.name}. Keep your elbows to yourself!"
                                         + bcolors.RESET
                                     )
-                                    booger.removeCard(4, txt)
+                                    booger.removeCard(4, txt, account_sid, auth_token)
                                     return True
                                 else:
                                     print(
@@ -1346,7 +1346,7 @@ class Board:
                                         + f"{booger.name}, used their whip on {character.name}. Keep your elbows to yourself!"
                                         + bcolors.RESET
                                     )
-                                    booger.removeCard(4, txt)
+                                    booger.removeCard(4, txt, account_sid, auth_token)
                                     return True
                                 else:
                                     print(
@@ -1388,7 +1388,7 @@ class Board:
                                         + f"{booger.name}, used their whip on {character.name}. Keep your elbows to yourself!"
                                         + bcolors.RESET
                                     )
-                                    booger.removeCard(4, txt)
+                                    booger.removeCard(4, txt, account_sid, auth_token)
                                     return True
                                 else:
                                     print(
@@ -1931,7 +1931,7 @@ def read_yaml_file(file_path):
         return None
 
 
-def EmeraldAction(board, character, initial_roll, game, args):
+def EmeraldAction(board, character, initial_roll, game, args, account_sid, auth_token):
     finished = False
     while finished == False:
         player_input = input("(P) Push, (E) Elbow, (J) Jump, (V) View rolled dice:")
@@ -1944,21 +1944,21 @@ def EmeraldAction(board, character, initial_roll, game, args):
             )
 
         if player_input.lower() == "e":
-            if board.elbow(character, args.text) == True:
+            if board.elbow(character, args.text, account_sid, auth_token) == True:
                 finished = True
                 board.displayCarts(game, args)
             else:
                 finished = False
 
         if player_input.lower() == "j":
-            if board.jump(character, args.text) == True:
+            if board.jump(character, args.text, account_sid, auth_token) == True:
                 finished = True
                 board.displayCarts(game, args)
             else:
                 finished = False
 
         if player_input.lower() == "p":
-            if board.push(character, args.text) == True:
+            if board.push(character, args.text, account_sid, auth_token) == True:
                 finished = True
                 board.displayCarts(game, args)
             else:
@@ -2130,8 +2130,8 @@ def main():
         tmp = board.determineStartPlayer()
         list_of_characters.remove(tmp)
         list_of_characters.insert(0, tmp)
-
-        print(f"Rolling dice:")
+        print("(R) Reroll, (T) Use Turkey, (D) Draw Remedy, (A) Use Arsenic, (U) Use Emerald, (P) Push, (E) Elbow, (J) Jump, (S) Skip Turn, (V) View rolled dice \n")
+        print(f"\nRolling dice:\n")
         time.sleep(0.5)
         initial_roll = Dice()
         initial_roll.updateResults()
@@ -2143,11 +2143,9 @@ def main():
             finished = False
             while finished == False:
                 print(
-                    f"\nIt is {character.name}'s turn. What would {character.name} like to do?'"
+                    f"\nIt is {character.name}'s turn. What would {character.name} like to do? :"
                 )
-                player_input = input(
-                    "(R) Reroll, (T) Use Turkey, (D) Draw Remedy, (A) Use Arsenic, (U) Use Emerald, (P) Push, (E) Elbow, (J) Jump, (S) Skip Turn, (V) View rolled dice:"
-                )
+                player_input = input()
 
                 if player_input.lower() == "v":
                     finished = False
@@ -2175,6 +2173,8 @@ def main():
                                     initial_roll=initial_roll,
                                     game=game,
                                     args=args,
+                                    account_sid=account_sid, 
+                                    auth_token=auth_token
                                 )
                                 character.removeCard(
                                     3, args.text, account_sid, auth_token
@@ -2191,21 +2191,21 @@ def main():
                         finished = False
 
                 if player_input.lower() == "e":
-                    if board.elbow(character, args.text) == True:
+                    if board.elbow(character, args.text, account_sid, auth_token) == True:
                         finished = True
                         board.displayCarts(game, args)
                     else:
                         finished = False
 
                 if player_input.lower() == "j":
-                    if board.jump(character, args.text) == True:
+                    if board.jump(character, args.text, account_sid, auth_token) == True:
                         finished = True
                         board.displayCarts(game, args)
                     else:
                         finished = False
 
                 if player_input.lower() == "p":
-                    if board.push(character, args.text) == True:
+                    if board.push(character, args.text, account_sid, auth_token) == True:
                         finished = True
                         board.displayCarts(game, args)
                     else:
@@ -2225,13 +2225,13 @@ def main():
                         initial_roll.reroll(int(reroll1), int(reroll2))
                         initial_roll.reroll(int(reroll3), int(reroll4))
                         print(
-                            f"Rerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
+                            f"\nRerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}\n"
                         )
-                        character.removeCard(5, args.text)
+                        character.removeCard(5, args.text, account_sid, auth_token)
                         finished = True
                     else:
                         print(
-                            f"Sorry {character.name}, you don't appear to have a turkey!"
+                            f"\nSorry {character.name}, you don't appear to have a turkey!\n"
                         )
                         finished = False
 
@@ -2256,17 +2256,17 @@ def main():
                             print(
                                 f"{character.name} has successfully locked dice {getlock1} and {getlock2}!"
                             )
-                            character.removeCard(1, args.text)
+                            character.removeCard(1, args.text,account_sid, auth_token)
                             finished = False
                         else:
                             print(
-                                f"Sorry {character.name}, you don't appear to have any arsenic!"
+                                f"\nSorry {character.name}, you don't appear to have any arsenic!\n"
                             )
                             finished = False
 
                     else:
                         print(
-                            f"Sorry {character.name}, you don't appear to have any remedy cards!"
+                            f"\nSorry {character.name}, you don't appear to have any remedy cards!\n"
                         )
                         finished = False
 
@@ -2399,11 +2399,11 @@ def main():
                                                         print(
                                                             f"Rerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
                                                         )
-                                                character.removeCard(2, args.text)
+                                                character.removeCard(2, args.text, account_sid, auth_token)
                                                 finished = True
                                             else:
                                                 print(
-                                                    f"Sorry {character.name}, you don't appear to have a chicken remedy!"
+                                                    f"\nSorry {character.name}, you don't appear to have a chicken remedy!\n"
                                                 )
                                                 finished = True
                                         else:
