@@ -727,6 +727,14 @@ class Board:
 
         self.displayCarts(game, args)
 
+    def getCartInfo(self, cartnum):
+        if cartnum == 1:
+            return self.cart1
+        elif cartnum == 2:
+            return self.cart2
+        elif cartnum == 3:
+            return self.cart3
+
     def updatePriority(self):
         if (self.cart1_position > self.cart2_position) and (
             self.cart1_position > self.cart3_position
@@ -1527,6 +1535,45 @@ class Board:
                 )
                 return False
 
+    def knight_action(self, character, num):
+        if num == 1:
+            indy = self.cart1.index(character)
+            if indy == 0:
+                print(f"\n{character.name} is already at the front of their cart!\n")
+            else:
+                self.cart1.pop(indy)
+                self.cart1.insert(0, character)
+                print(Fore.CYAN + Style.BRIGHT)
+                print(
+                    f"{character.name} has been knighted to the front of the cart!"
+                )
+                print(bcolors.RESET)
+
+        elif num == 2:
+            indy = self.cart2.index(character)
+            if indy == 0:
+                print(f"\n{character.name} is already at the front of their cart!\n")
+            else:
+                self.cart2.pop(indy)
+                self.cart2.insert(0, character)
+                print(Fore.YELLOW + Style.BRIGHT)
+                print(
+                    f"{character.name} has been knighted to the front of the cart!"
+                )
+                print(bcolors.RESET)
+        elif num == 3:
+            indy = self.cart3.index(character)
+            if indy == 0:
+                print(f"\n{character.name} is already at the front of their cart!\n")
+            else:
+                self.cart3.pop(indy)
+                self.cart3.insert(0, character)
+                print(Fore.MAGENTA + Style.BRIGHT)
+                print(
+                    f"{character.name} has been knighted to the front of the cart!"
+                )
+                print(bcolors.RESET)
+
     def elbow(self, character, txt, account_sid, auth_token):
         if character.cart == 1:
             if len(self.cart1) < 2:
@@ -1659,66 +1706,79 @@ class Board:
         new_supply = [1,2,3,4]
         if cart == 1:
             for character in self.cart1:
-                new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
-                character.status1 = new_symptoms[0]
-                character.status2 = new_symptoms[1]
-                character.updateStatement()
-                character.increaseMingleCount()
-                if not args.test:
-                    print(
-                        f"{character.name}, please check your phone for your updated symptoms."
-                    )
-                    send_mingle_message(
-                        name=character.name,
-                        phone_number=character.phone_number,
-                        mingle_statement=character.plague_statement,
-                        account_sid=sid,
-                        auth_token=token,
-                    )
+                if not character.getDrunkStatus():
+                    new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
+                    character.status1 = new_symptoms[0]
+                    character.status2 = new_symptoms[1]
+                    character.updateStatement()
+                    character.increaseMingleCount()
+                    if not args.test:
+                        print(
+                            f"{character.name}, please check your phone for your updated symptoms."
+                        )
+                        send_mingle_message(
+                            name=character.name,
+                            phone_number=character.phone_number,
+                            mingle_statement=character.plague_statement,
+                            account_sid=sid,
+                            auth_token=token,
+                        )
+                    else:
+                        print(character.name, character.plague_statement)
                 else:
-                    print(character.name, character.plague_statement)
+                    print(f"\n{character.name} is drunk, and is immune from mingling! 🍻🍺🥴\n")
+                    character.resetDrunk()
 
         elif cart == 2:
             for character in self.cart2:
-                new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
-                character.status1 = new_symptoms[0]
-                character.status2 = new_symptoms[1]
-                character.updateStatement()
-                character.increaseMingleCount()
-                if not args.test:
-                    print(
-                        f"{character.name}, please check your phone for your updated symptoms."
-                    )
-                    send_mingle_message(
-                        name=character.name,
-                        phone_number=character.phone_number,
-                        mingle_statement=character.plague_statement,
-                        account_sid=sid,
-                        auth_token=token,
-                    )
+                if not character.getDrunkStatus():
+                    new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
+                    character.status1 = new_symptoms[0]
+                    character.status2 = new_symptoms[1]
+                    character.updateStatement()
+                    character.increaseMingleCount()
+                    if not args.test:
+                        print(
+                            f"{character.name}, please check your phone for your updated symptoms."
+                        )
+                        send_mingle_message(
+                            name=character.name,
+                            phone_number=character.phone_number,
+                            mingle_statement=character.plague_statement,
+                            account_sid=sid,
+                            auth_token=token,
+                        )
+                    else:
+                        print(character.name, character.plague_statement)
                 else:
-                    print(character.name, character.plague_statement)
+                    print(f"\n{character.name} is drunk, and is immune from mingling! 🍻🍺🥴\n")
+                    character.resetDrunk()
 
         elif cart == 3:
             for character in self.cart3:
-                new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
-                character.status1 = new_symptoms[0]
-                character.status2 = new_symptoms[1]
-                character.updateStatement()
-                character.increaseMingleCount()
-                if not args.test:
-                    print(
-                        f"{character.name}, please check your phone for your updated symptoms."
-                    )
-                    send_mingle_message(
-                        name=character.name,
-                        phone_number=character.phone_number,
-                        mingle_statement=character.plague_statement,
-                        account_sid=sid,
-                        auth_token=token,
-                    )
+                if not character.getDrunkStatus():
+                    new_symptoms = random.choices(new_supply, cum_weights=(20, 20, 30, 30), k=2)
+                    character.status1 = new_symptoms[0]
+                    character.status2 = new_symptoms[1]
+                    character.updateStatement()
+                    character.increaseMingleCount()
+                    if not args.test:
+                        print(
+                            f"{character.name}, please check your phone for your updated symptoms."
+                        )
+                        send_mingle_message(
+                            name=character.name,
+                            phone_number=character.phone_number,
+                            mingle_statement=character.plague_statement,
+                            account_sid=sid,
+                            auth_token=token,
+                        )
+                    else:
+                        print(character.name, character.plague_statement)
                 else:
-                    print(character.name, character.plague_statement)
+                    print(f"\n{character.name} is drunk, and is immune from mingling! 🍻🍺🥴\n")
+                    character.resetDrunk()
+
 
     def getCarOrder(self):
         carorder = []
@@ -1798,6 +1858,7 @@ class Character:
         self.charactertype = None
         self.characterdesc = None
         self.isDrunk = False
+        self.isOutlaw = False
 
         self.remedy_Dictionary = {
             1: "Arsenic",
@@ -1814,6 +1875,12 @@ class Character:
             4: "Prevent someone from jumping into your cart, elbowing past you, or pushing you off your cart. Use on another players turn.",
             5: "Used to reroll 4 dice, instead of the standard 2.",
         }
+
+    def getOutlaw(self):
+        return self.isOutlaw
+
+    def setOutlaw(self):
+        self.isOutlaw = True
 
     def getCart(self):
         return self.cart
@@ -1835,11 +1902,18 @@ class Character:
     def setDrunk(self):
         self.isDrunk = True
 
+    def getDrunkStatus(self):
+        return self.isDrunk
+
     def resetDrunk(self):
         self.isDrunk = False
 
     def getStatus(self):
-        return self.status1
+        xd = random.randint(1,2)
+        if xd == 1:
+            return self.status1
+        else:
+            return self.status2
 
     def getCharacterType(self, charname, chardesc):
         self.charactertype = charname
@@ -2129,14 +2203,15 @@ def parse_args():
 def introsequence(args, sid, token):
     registered_users = read_yaml_file(args.registered)["registered_users"]
     character_dict = {
-        "Sherrif": "You can view one symptom of a player on a different cart.",
-        "Friar": "You can change one die to be exactly what you would like it to be.",
-        "Outlaw": "You can roll one die. If it matches the color of your current cart, take a bonus action.",
-        "Maison": "You can reroll one die, then lock one die.",
+        "Sheriff": "You can view 1 symptom of a player on a different cart.",
+        "Friar": "You can change 1 die to be exactly what you want.",
+        "Outlaw": "You have a 1/3 chance of gaining a free remedy card (happens automatically at the start of your turn).",
+        "Mason": "You can reroll 1 die, then lock one die.",
         "Chandler": "You can draw a random symptom and choose to replace it with one of your own.",
         "Countess": "You can draw 2 remedies and keep 1 of them.",
-        "Drunk": "You can turn all of your carts dice into rats, however, you are immune from mingling this round.",
-        "Rat King": "You can replace up to two apple die with a rat."
+        "Drunkard": "You can turn 1 die into a rat of your current cart color. You are also immune from mingling whenever you use this.",
+        "Rat King": "You can replace up to two apple dice with a rat of the same cart color.",
+        "Knight": "You can move any player up to the front of their current cart."
     }
     ascii_art = """
   ____       _     _        _   __ ____  _____  ___  
@@ -2171,8 +2246,8 @@ def introsequence(args, sid, token):
                     print(f"\n{list_of_characters[i].name}, you are the {selected_char}: {selected_description}\n")
                 
                 else:
-                    statement2 = f"You are the {selected_char}: {selected_description}"
-                    print(statement2)
+                    statement2 = f"{list_of_characters[i].name}, you are the {selected_char}: {selected_description}"
+                    print(f"\n{statement2}\n")
                     send_remedy_message(
                         name=list_of_characters[i].name,
                         phone_number=list_of_characters[i].phone_number,
@@ -2181,6 +2256,11 @@ def introsequence(args, sid, token):
                         auth_token=token,
                     )
                     time.sleep(1.5)
+                try:
+                    if selected_char == "Outlaw":
+                        list_of_characters[i].setOutlaw()
+                except Exception as e:
+                    print("\nAn error occurred when using the outlaw.", e,"\n")
                 del character_dict[selected_char]
 
             if not args.test:
@@ -2459,6 +2539,23 @@ def main():
                 print(
                     f"\nIt is {character.name}'s turn. What would {character.name} like to do? :"
                 )
+                try:
+                    if character.getOutlaw():
+                        odds = random.randint(1,3)
+                        mariokart = character.getCart()
+                        print(f"\n{character.name} is the outlaw, and is attempting to steal a remedy... \n")
+                        time.sleep(3)
+                        if odds == mariokart:
+                            print(Fore.GREEN + f"Congratulations {character.name}! You got a free remedy\n" + bcolors.RESET)
+                            if character.drawRemedy(args, account_sid, auth_token) == True:
+                                finished = False
+                            else:
+                                finished = False
+                        else:
+                            print(Fore.RED, Style.BRIGHT + f"Sorry {character.name}, better luck next time!\n" + bcolors.RESET)
+                except Exception as e:
+                    print("\nAn error occurred when using the outlaw.", e,"\n")
+
                 player_input = input()
 
                 if player_input.lower() == "v":
@@ -2473,7 +2570,7 @@ def main():
                     if not args.character:
                         print(f"\nSorry, character powers are not available this game! Run `bristol -c` for character powers!\n")
                     else:
-                        if character.charactertype == "Maison":
+                        if character.charactertype == "Mason":
                             try:
                                 power_continue = input(f"{character.name}, would you like to use your Maison power? (y/n):")
                                 if power_continue.lower() == "y":
@@ -2785,97 +2882,68 @@ def main():
                                 finished = False 
 
                         #TODO: change drunk to change one other die into a rat. Still give yourself immunity.
-                        elif character.charactertype == "Drunk":
+                        elif character.charactertype == "Drunkard":
                             try:
-                                power_continue = input(f"{character.name}, would you like to use your Drunk power? (y/n):")
+                                power_continue = input(f"{character.name}, would you like to use your Drunkard power? (y/n):")
                                 if power_continue.lower() == "y":
                                     character.setDrunk()
                                     print(f"\n{character.name} is drunk! 🍻🍺🥴 \n")
-                                    mariokart = character.getCart()
-                                    if mariokart == 1:
-                                        if initial_roll.dice1 == 1:
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                    carttype = character.getCart()
+                                    reroll1 = input("Select the dice you want to ratify (1-6):")
+                                    if reroll1 == "1":
+                                        if carttype == 1:
                                             initial_roll.setdie(1,2)
-                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
-                                        if initial_roll.dice2 == 1:
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(2,2)
-                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
-                                        if initial_roll.dice3 == 1:
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(3,2)
-                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
-                                        if initial_roll.dice4 == 1:
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(4,2)
-                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
-                                        if initial_roll.dice5 == 1:
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(5,2)
-                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
-                                        if initial_roll.dice6 == 1:
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(6,2)
-                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-
-                                    elif mariokart == 2:
-                                        if initial_roll.dice1 == 3:
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                        elif carttype == 2:
                                             initial_roll.setdie(1,4)
-                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
-                                        if initial_roll.dice2 == 3:
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(2,4)
-                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
-                                        if initial_roll.dice3 == 3:
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(3,4)
-                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
-                                        if initial_roll.dice4 == 3:
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(4,4)
-                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
-                                        if initial_roll.dice5 == 3:
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(5,4)
-                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
-                                        if initial_roll.dice6 == 3:
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            initial_roll.setdie(6,4)
-                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-
-                                    elif mariokart == 3:
-                                        if initial_roll.dice1 == 5:
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                        elif carttype == 3:
                                             initial_roll.setdie(1,6)
-                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
-                                        if initial_roll.dice2 == 5:
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                        game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                    elif reroll1 == "2":
+                                        if carttype == 1:
+                                            initial_roll.setdie(2,2)
+                                        elif carttype == 2:
+                                            initial_roll.setdie(2,4)
+                                        elif carttype == 3:
                                             initial_roll.setdie(2,6)
-                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
-                                        if initial_roll.dice3 == 5:
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                        game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                    elif reroll1 == "3":
+                                        if carttype == 1:
+                                            initial_roll.setdie(3,2)
+                                        elif carttype == 2:
+                                            initial_roll.setdie(3,4)
+                                        elif carttype == 3:
                                             initial_roll.setdie(3,6)
-                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
-                                        if initial_roll.dice4 == 5:
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                        game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                    elif reroll1 == "4":
+                                        if carttype == 1:
+                                            initial_roll.setdie(4,2)
+                                        elif carttype == 2:
+                                            initial_roll.setdie(4,4)
+                                        elif carttype == 3:
                                             initial_roll.setdie(4,6)
-                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
-                                        if initial_roll.dice5 == 5:
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                        game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                    elif reroll1 == "5":
+                                        if carttype == 1:
+                                            initial_roll.setdie(5,2)
+                                        elif carttype == 2:
+                                            initial_roll.setdie(5,4)
+                                        elif carttype == 3:
                                             initial_roll.setdie(5,6)
-                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
-                                        if initial_roll.dice6 == 5:
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                        game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                    elif reroll1 == "6":
+                                        if carttype == 1:
+                                            initial_roll.setdie(6,2)
+                                        elif carttype == 2:
+                                            initial_roll.setdie(6,4)
+                                        elif carttype == 3:
                                             initial_roll.setdie(6,6)
-                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                        game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
                                     finished = True
                             except Exception as e:
-                                print("\nAn error occurred when using the countess.", e,"\n")
+                                print("\nAn error occurred when using the drunkard.", e,"\n")
                                 finished = False 
 
-                        #TODO: Randomize which symptom (only does first). 
-                        elif character.charactertype == "Sherrif":
+                        elif character.charactertype == "Sheriff":
                             try:
                                 power_continue = input(f"{character.name}, would you like to use your Sheriff power? (y/n):")
                                 if power_continue.lower() == "y":
@@ -2883,10 +2951,20 @@ def main():
                                     for i in range(len(list_of_characters)):
                                         print(f"{i}) {list_of_characters[i].name}")
                                     charInput = input()
+                                    symptom_val = list_of_characters[int(charInput)].getStatus()
+                                    symptom_desc = ""
+                                    if symptom_val == 1:
+                                        symptom_desc = "a headache"
+                                    elif symptom_val == 2:
+                                        symptom_desc = "the chills"
+                                    elif symptom_val == 3:
+                                        symptom_desc = "a cough"
+                                    elif symptom_val == 4:
+                                        symptom_desc == "buboes"
                                     if args.test:
-                                        print(f"\n{list_of_characters[int(charInput)].name} has a {list_of_characters[int(charInput)].getStatus()}!\n")
+                                        print(f"\n{list_of_characters[int(charInput)].name} has {symptom_desc} ({list_of_characters[int(charInput)].getStatus()})!\n")
                                     else:
-                                        statement = f"Sherrif power: {list_of_characters[int(charInput)].name} has a {list_of_characters[int(charInput)].getStatus()}!"
+                                        statement = f"\n{list_of_characters[int(charInput)].name} has {symptom_desc} ({list_of_characters[int(charInput)].getStatus()})!"
                                         send_remedy_message(
                                             name=character.name,
                                             phone_number=character.phone_number,
@@ -2897,6 +2975,31 @@ def main():
                                     finished = True
                             except Exception as e:
                                 print("\nAn error occurred when using the sheriff.", e,"\n")
+                                finished = False 
+
+                        elif character.charactertype == "Knight":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Knight power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    print("\nPick a character:\n")
+                                    for j in range(len(list_of_characters)):
+                                        print(f"{j}) {list_of_characters[j].name}")
+                                    knight_input = input()
+                                    if list_of_characters[int(knight_input)].cart == 1:
+                                        #position = Board.cart1.index(list_of_characters[int(knight_input)])
+                                        board.knight_action(list_of_characters[int(knight_input)],1)
+                                    elif list_of_characters[int(knight_input)].cart == 2:
+                                        #position = Board.cart2.index(list_of_characters[int(knight_input)])
+                                        board.knight_action(list_of_characters[int(knight_input)],2)
+                                    elif list_of_characters[int(knight_input)].cart == 3:
+                                        #position = Board.cart3.index(list_of_characters[int(knight_input)])
+                                        board.knight_action(list_of_characters[int(knight_input)],3)
+                                board.displayCarts(game, args)
+                                finished = True
+
+                                        
+                            except Exception as e:
+                                print("\nAn error occurred when using the knight.", e,"\n")
                                 finished = False 
                     
 
