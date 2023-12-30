@@ -489,6 +489,26 @@ class Dice:
         self.dice5_lock = False
         self.dice6_lock = False
 
+    def setdie(self, die_num, die_val):
+        if die_num == 1:
+            self.dice1 = die_val
+            self.updateResults()
+        elif die_num == 2:
+            self.dice2 = die_val
+            self.updateResults()
+        elif die_num == 3:
+            self.dice3 = die_val
+            self.updateResults()
+        elif die_num == 4:
+            self.dice4 = die_val
+            self.updateResults()
+        elif die_num == 5:
+            self.dice5 = die_val
+            self.updateResults()
+        elif die_num == 6:
+            self.dice6 = die_val
+            self.updateResults()
+
     def reroll(self, index1, index2):
         tmp = False
         to_return = []
@@ -1776,6 +1796,8 @@ class Character:
         self.currentRemedyTotal = 0
         self.numMingles = 0
         self.charactertype = None
+        self.characterdesc = None
+        self.isDrunk = False
 
         self.remedy_Dictionary = {
             1: "Arsenic",
@@ -1793,8 +1815,35 @@ class Character:
             5: "Used to reroll 4 dice, instead of the standard 2.",
         }
 
-    def getCharacterType(self, charac):
-        self.charctertype = charac
+    def getCart(self):
+        return self.cart
+
+    def updateRemedy(self, index, val):
+        if index == 0:
+            self.remedycard1 = val
+        elif index == 1:
+            self.remedycard2 = val
+        elif index == 2:
+            self.remedycard3 = val
+
+    def setStatusCorn(self, num, val):
+        if num==1:
+            self.status1 = val
+        else:
+            self.status2 = val
+
+    def setDrunk(self):
+        self.isDrunk = True
+
+    def resetDrunk(self):
+        self.isDrunk = False
+
+    def getStatus(self):
+        return self.status1
+
+    def getCharacterType(self, charname, chardesc):
+        self.charactertype = charname
+        self.characterdesc = chardesc
 
     def increaseMingleCount(self):
         self.numMingles += 1
@@ -1876,8 +1925,8 @@ class Character:
             self.remedycard3 = None
         self.currentRemedyTotal -= 1
         print(f"{self.name} has used up their {self.remedy_Dictionary[value]}!")
-        if txt:
-            # TODO: used remedy text
+        #TODO: Change var name without breaking the game.
+        if not txt:
             remedy_txt = f"You have successfully used up your {self.remedy_Dictionary[value]} remedy! \n \n"
             remedy_appendage = ""
             if not self.remedycard1:
@@ -1919,7 +1968,7 @@ class Character:
             return False
 
         # Text current remedy card status.
-        remedy_message = f"you received the {self.remedy_Dictionary[new_card]} remedy: {self.remedy_Description[new_card]}"
+        remedy_message = f"You received the {self.remedy_Dictionary[new_card]} remedy: {self.remedy_Description[new_card]}"
         remedy_message = remedy_message + f"\n\n {total_remedy_message}"
         if not args.test:
             send_remedy_message(
@@ -1979,7 +2028,6 @@ class Character:
             )
 
     def generateStartStatus(self, args):
-        # TODO: remove
         self.status1 = random.randint(1, 3)
         self.status2 = random.randint(1, 3)
         if self.status1 == 1:
@@ -2080,6 +2128,16 @@ def parse_args():
 
 def introsequence(args, sid, token):
     registered_users = read_yaml_file(args.registered)["registered_users"]
+    character_dict = {
+        "Sherrif": "You can view one symptom of a player on a different cart.",
+        "Friar": "You can change one die to be exactly what you would like it to be.",
+        "Outlaw": "You can roll one die. If it matches the color of your current cart, take a bonus action.",
+        "Maison": "You can reroll one die, then lock one die.",
+        "Chandler": "You can draw a random symptom and choose to replace it with one of your own.",
+        "Countess": "You can draw 2 remedies and keep 1 of them.",
+        "Drunk": "You can turn all of your carts dice into rats, however, you are immune from mingling this round.",
+        "Rat King": "You can replace up to two apple die with a rat."
+    }
     ascii_art = """
   ____       _     _        _   __ ____  _____  ___  
  |  _ \     (_)   | |      | | /_ |___ \| ____|/ _ \ 
@@ -2104,6 +2162,27 @@ def introsequence(args, sid, token):
                 phone_number=registered_users[args.players[i]],
             )
             list_of_characters[i].generateStartStatus(args)
+            time.sleep(1.5)
+
+            if args.character:
+                selected_char, selected_description = random.choice(list(character_dict.items()))
+                list_of_characters[i].getCharacterType(selected_char, selected_description)
+                if args.test:
+                    print(f"\n{list_of_characters[i].name}, you are the {selected_char}: {selected_description}\n")
+                
+                else:
+                    statement2 = f"You are the {selected_char}: {selected_description}"
+                    print(statement2)
+                    send_remedy_message(
+                        name=list_of_characters[i].name,
+                        phone_number=list_of_characters[i].phone_number,
+                        remedy_statement=statement2,
+                        account_sid=sid,
+                        auth_token=token,
+                    )
+                    time.sleep(1.5)
+                del character_dict[selected_char]
+
             if not args.test:
                 print(
                     f"\n{args.players[i]}, you have been sent a text message with your symptoms!"
@@ -2384,10 +2463,555 @@ def main():
 
                 if player_input.lower() == "v":
                     finished = False
-                    board.displayCarts(game, args)
+                    print(f"\n{character.charactertype}: {character.characterdesc}\n")
                     print(
                         f"(1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
                     )
+
+                #TODO: Change command
+                if player_input.lower() == "w":
+                    if not args.character:
+                        print(f"\nSorry, character powers are not available this game! Run `bristol -c` for character powers!\n")
+                    else:
+                        if character.charactertype == "Maison":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Maison power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    reroll1 = input("Select a die to reroll (1-6):")
+                                    initial_roll.reroll(int(reroll1), None)
+                                    print(
+                                        f"Rerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
+                                    )
+                                    game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                    game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                    game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                    game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                    game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                    game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                    getlock1 = input(f"Now select a dice to unlock(1-6):")
+                                    if getlock1 == "1":
+                                        initial_roll.dice1_lock = True
+                                    if getlock1 == "2":
+                                        initial_roll.dice2_lock = True
+                                    if getlock1 == "3":
+                                        initial_roll.dice3_lock = True
+                                    if getlock1 == "4":
+                                        initial_roll.dice4_lock = True
+                                    if getlock1 == "5":
+                                        initial_roll.dice5_lock = True
+                                    if getlock1 == "6":
+                                        initial_roll.dice6_lock = True
+                                    print(
+                                        f"{character.name} has successfully locked dice {getlock1}!"
+                                    )
+                                    game.update_lock_symbol(int(getlock1), True, False)
+                                    finished = True
+                            except Exception as e:
+                                print("\nAn error occurred when using the countess.", e,"\n")
+                                finished = False 
+
+                        elif character.charactertype == "Friar":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Friar power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    reroll1 = input("Select a die to change (1-6):")
+                                    roll_value_str = "1)" + Fore.CYAN + " Apple " + bcolors.RESET + " 2)" + Fore.CYAN + " Rat " + bcolors.RESET + "3)" + Fore.YELLOW + " Apple " + bcolors.RESET + "4)" + Fore.YELLOW + " Rat " + bcolors.RESET + "5)" + Fore.MAGENTA + Style.BRIGHT + " Apple " + bcolors.RESET + "6) " + Fore.MAGENTA + Style.BRIGHT + "Rat" + bcolors.RESET + ":"
+                                    if int(reroll1) == 1:
+                                        old = initial_roll.dice1_result
+                                        print(f"What would you like to change die {initial_roll.dice1_result} to?:")
+                                        chosen_val = input(roll_value_str)
+                                        if (int(chosen_val)<= 6) and (int(chosen_val)>= 1):
+                                            initial_roll.setdie(1,int(chosen_val))
+                                            print(f"\n{old} -> {initial_roll.dice1_result}\n")
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                            finished = True
+                                    elif int(reroll1) == 2:
+                                        old = initial_roll.dice2_result
+                                        print(f"What would you like to change die {initial_roll.dice2_result} to?:")
+                                        chosen_val = input(roll_value_str)
+                                        if (int(chosen_val)<= 6) and (int(chosen_val)>= 1):
+                                            initial_roll.setdie(2,int(chosen_val))
+                                            print(f"\n{old} -> {initial_roll.dice2_result}\n")
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                            finished = True
+                                    elif int(reroll1) == 3:
+                                        old = initial_roll.dice3_result
+                                        print(f"What would you like to change die {initial_roll.dice3_result} to?:")
+                                        chosen_val = input(roll_value_str)
+                                        if (int(chosen_val)<= 6) and (int(chosen_val)>= 1):
+                                            initial_roll.setdie(3,int(chosen_val))
+                                            print(f"\n{old} -> {initial_roll.dice3_result}\n")
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                            finished = True
+                                    elif int(reroll1) == 4:
+                                        old = initial_roll.dice4_result
+                                        print(f"What would you like to change die {initial_roll.dice4_result} to?:")
+                                        chosen_val = input(roll_value_str)
+                                        if (int(chosen_val)<= 6) and (int(chosen_val)>= 1):
+                                            initial_roll.setdie(4,int(chosen_val))
+                                            print(f"\n{old} -> {initial_roll.dice4_result}\n")
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                            finished = True
+                                    elif int(reroll1) == 5:
+                                        old = initial_roll.dice5_result
+                                        print(f"What would you like to change die {initial_roll.dice5_result} to?:")
+                                        chosen_val = input(roll_value_str)
+                                        if (int(chosen_val)<= 6) and (int(chosen_val)>= 1):
+                                            initial_roll.setdie(5,int(chosen_val))
+                                            print(f"\n{old} -> {initial_roll.dice5_result}\n")
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                            finished = True
+                                    elif int(reroll1) == 6:
+                                        old = initial_roll.dice6_result
+                                        print(f"What would you like to change die {initial_roll.dice2_result} to?:")
+                                        chosen_val = input(roll_value_str)
+                                        if (int(chosen_val)<= 6) and (int(chosen_val)>= 1):
+                                            initial_roll.setdie(6,int(chosen_val))
+                                            print(f"\n{old} -> {initial_roll.dice6_result}\n")
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                            finished = True
+                            except Exception as e:
+                                print("\nAn error occurred when using the friar.", e,"\n")
+                                finished = False 
+
+                        elif character.charactertype == "Rat King":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Rat King power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    reroll1 = input("Select a die to change (1-6):")
+                                    if int(reroll1) == 1:
+                                        if int(initial_roll.dice1) == 1:
+                                            initial_roll.setdie(1,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        elif int(initial_roll.dice1) == 3:
+                                            initial_roll.setdie(1,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        elif int(initial_roll.dice1) == 5:
+                                            initial_roll.setdie(1,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        else:
+                                            print(f"{initial_roll.dice1_result} is already a rat!")
+
+                                    elif int(reroll1) == 2:
+                                        if int(initial_roll.dice2) == 1:
+                                            initial_roll.setdie(2,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        elif int(initial_roll.dice2) == 3:
+                                            initial_roll.setdie(2,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        elif int(initial_roll.dice2) == 5:
+                                            initial_roll.setdie(2,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        else:
+                                            print(f"{initial_roll.dice2_result} is already a rat!")
+
+                                    elif int(reroll1) == 3:
+                                        if int(initial_roll.dice3) == 1:
+                                            initial_roll.setdie(3,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        elif int(initial_roll.dice3) == 3:
+                                            initial_roll.setdie(3,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        elif int(initial_roll.dice3) == 5:
+                                            initial_roll.setdie(3,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        else:
+                                            print(f"{initial_roll.dice3_result} is already a rat!")
+
+                                    elif int(reroll1) == 4:
+                                        if int(initial_roll.dice4) == 1:
+                                            initial_roll.setdie(4,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        elif int(initial_roll.dice4) == 3:
+                                            initial_roll.setdie(4,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        elif int(initial_roll.dice4) == 5:
+                                            initial_roll.setdie(4,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        else:
+                                            print(f"{initial_roll.dice4_result} is already a rat!")
+
+                                    elif int(reroll1) == 5:
+                                        if int(initial_roll.dice5) == 1:
+                                            initial_roll.setdie(5,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        elif int(initial_roll.dice5) == 3:
+                                            initial_roll.setdie(5,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        elif int(initial_roll.dice5) == 5:
+                                            initial_roll.setdie(5,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        else:
+                                            print(f"{initial_roll.dice5_result} is already a rat!")
+
+                                    elif int(reroll1) == 6:
+                                        if int(initial_roll.dice6) == 1:
+                                            initial_roll.setdie(6,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                        elif int(initial_roll.dice6) == 3:
+                                            initial_roll.setdie(6,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                        elif int(initial_roll.dice6) == 5:
+                                            initial_roll.setdie(6,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                        else:
+                                            print(f"{initial_roll.dice6_result} is already a rat!")
+
+                                reroll1 = input("Select a second die to change (1-6, n to cancel):")
+
+                                if reroll1 == "1":
+                                        if int(initial_roll.dice1) == 1:
+                                            initial_roll.setdie(1,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        elif int(initial_roll.dice1) == 3:
+                                            initial_roll.setdie(1,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        elif int(initial_roll.dice1) == 5:
+                                            initial_roll.setdie(1,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        else:
+                                            print(f"{initial_roll.dice1_result} is already a rat!")
+                                        finished = True
+
+                                elif reroll1 == "2":
+                                        if int(initial_roll.dice2) == 1:
+                                            initial_roll.setdie(2,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        elif int(initial_roll.dice2) == 3:
+                                            initial_roll.setdie(2,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        elif int(initial_roll.dice2) == 5:
+                                            initial_roll.setdie(2,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        else:
+                                            print(f"{initial_roll.dice2_result} is already a rat!")
+                                        finished = True
+
+                                elif reroll1 == "3":
+                                        if int(initial_roll.dice3) == 1:
+                                            initial_roll.setdie(3,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        elif int(initial_roll.dice3) == 3:
+                                            initial_roll.setdie(3,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        elif int(initial_roll.dice3) == 5:
+                                            initial_roll.setdie(3,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        else:
+                                            print(f"{initial_roll.dice3_result} is already a rat!")
+                                        finished = True
+
+                                elif reroll1 == "4":
+                                        if int(initial_roll.dice4) == 1:
+                                            initial_roll.setdie(4,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        elif int(initial_roll.dice4) == 3:
+                                            initial_roll.setdie(4,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        elif int(initial_roll.dice4) == 5:
+                                            initial_roll.setdie(4,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        else:
+                                            print(f"{initial_roll.dice4_result} is already a rat!")
+                                        finished = True
+
+                                elif reroll1 == "5":
+                                        if int(initial_roll.dice5) == 1:
+                                            initial_roll.setdie(5,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        elif int(initial_roll.dice5) == 3:
+                                            initial_roll.setdie(5,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        elif int(initial_roll.dice5) == 5:
+                                            initial_roll.setdie(5,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        else:
+                                            print(f"{initial_roll.dice5_result} is already a rat!")
+                                        finished = True
+
+                                elif reroll1 == "6":
+                                        if int(initial_roll.dice6) == 1:
+                                            initial_roll.setdie(6,2)
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                        elif int(initial_roll.dice6) == 3:
+                                            initial_roll.setdie(6,4)
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                        elif int(initial_roll.dice6) == 5:
+                                            initial_roll.setdie(6,6)
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                        else:
+                                            print(f"{initial_roll.dice6_result} is already a rat!")
+                                        finished = True
+                                else:
+                                    finished = True
+                            except Exception as e:
+                                print("\nAn error occurred when using the rat king.", e,"\n")
+                                finished = False 
+
+                        #TODO: change drunk to change one other die into a rat. Still give yourself immunity.
+                        elif character.charactertype == "Drunk":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Drunk power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    character.setDrunk()
+                                    print(f"\n{character.name} is drunk! 🍻🍺🥴 \n")
+                                    mariokart = character.getCart()
+                                    if mariokart == 1:
+                                        if initial_roll.dice1 == 1:
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(1,2)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        if initial_roll.dice2 == 1:
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(2,2)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        if initial_roll.dice3 == 1:
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(3,2)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        if initial_roll.dice4 == 1:
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(4,2)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        if initial_roll.dice5 == 1:
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(5,2)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        if initial_roll.dice6 == 1:
+                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(6,2)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+
+                                    elif mariokart == 2:
+                                        if initial_roll.dice1 == 3:
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(1,4)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        if initial_roll.dice2 == 3:
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(2,4)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        if initial_roll.dice3 == 3:
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(3,4)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        if initial_roll.dice4 == 3:
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(4,4)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        if initial_roll.dice5 == 3:
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(5,4)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        if initial_roll.dice6 == 3:
+                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(6,4)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+
+                                    elif mariokart == 3:
+                                        if initial_roll.dice1 == 5:
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(1,6)
+                                            game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                        if initial_roll.dice2 == 5:
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(2,6)
+                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                        if initial_roll.dice3 == 5:
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(3,6)
+                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                        if initial_roll.dice4 == 5:
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(4,6)
+                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                        if initial_roll.dice5 == 5:
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(5,6)
+                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                        if initial_roll.dice6 == 5:
+                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                            initial_roll.setdie(6,6)
+                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                    finished = True
+                            except Exception as e:
+                                print("\nAn error occurred when using the countess.", e,"\n")
+                                finished = False 
+
+                        #TODO: Randomize which symptom (only does first). 
+                        elif character.charactertype == "Sherrif":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Sheriff power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    print("Who would you like to view symptoms of?")
+                                    for i in range(len(list_of_characters)):
+                                        print(f"{i}) {list_of_characters[i].name}")
+                                    charInput = input()
+                                    if args.test:
+                                        print(f"\n{list_of_characters[int(charInput)].name} has a {list_of_characters[int(charInput)].getStatus()}!\n")
+                                    else:
+                                        statement = f"Sherrif power: {list_of_characters[int(charInput)].name} has a {list_of_characters[int(charInput)].getStatus()}!"
+                                        send_remedy_message(
+                                            name=character.name,
+                                            phone_number=character.phone_number,
+                                            remedy_statement=statement,
+                                            account_sid=account_sid,
+                                            auth_token=auth_token,
+                                        )
+                                    finished = True
+                            except Exception as e:
+                                print("\nAn error occurred when using the sheriff.", e,"\n")
+                                finished = False 
+                    
+
+                        elif character.charactertype == "Countess":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Countess power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    tot = character.currentRemedyTotal
+                                    if tot > 2:
+                                        print(f"\nSorry {character.name}, you are unable to use your Countess ability, as you already have 3 remedies!\n")
+                                        finished = False
+                                    else:
+                                        remedy1 = random.randint(1,5)
+                                        remedy2 = random.randint(1,5)
+                                        if args.test:
+                                            print(f"You drew 1) {character.remedy_Dictionary[remedy1]} and 2) {character.remedy_Dictionary[remedy2]}. Which would you like to keep?")
+                                        else:
+                                            msg = f"You drew 1) {character.remedy_Dictionary[remedy1]} and 2) {character.remedy_Dictionary[remedy2]}. Which would you like to keep?"
+                                            send_remedy_message(
+                                                name=character.name,
+                                                phone_number=character.phone_number,
+                                                remedy_statement=msg,
+                                                account_sid=account_sid,
+                                                auth_token=auth_token,
+                                            )
+                                        countess_input = input()
+                                        
+                                        if int(countess_input) == 1:
+                                            character.updateRemedy(tot, remedy1)
+                                            remedy_message = f"You received the {character.remedy_Dictionary[remedy1]} remedy: {character.remedy_Description[remedy1]}"
+                                            if not args.test:
+                                                send_remedy_message(
+                                                    name=character.name,
+                                                    phone_number=character.phone_number,
+                                                    remedy_statement=remedy_message,
+                                                    account_sid=account_sid,
+                                                    auth_token=auth_token,
+                                                )
+                                            else:
+                                                print(remedy_message)
+                                        else:
+                                            character.updateRemedy(tot, remedy2)
+                                            remedy_message = f"You received the {character.remedy_Dictionary[remedy2]} remedy: {character.remedy_Description[remedy2]}"
+                                            if not args.test:
+                                                send_remedy_message(
+                                                    name=character.name,
+                                                    phone_number=character.phone_number,
+                                                    remedy_statement=remedy_message,
+                                                    account_sid=account_sid,
+                                                    auth_token=auth_token,
+                                                )
+                                            else:
+                                                print(remedy_message)
+                                        finished = True
+                            except Exception as e:
+                                print("\nAn error occurred when using the countess.", e,"\n")
+                                finished = False 
+                                    
+                        elif character.charactertype == "Outlaw":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Outlaw power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    mariokart = character.getCart()
+                                    roll = random.randint(1,3)
+                                    #roll = mariokart
+                                    if roll == mariokart:
+                                        print(f"Congratulations {character.name}! You got a free remedy\n")
+                                        if character.drawRemedy(args, account_sid, auth_token) == True:
+                                            finished = False
+                                        else:
+                                            finished = False
+                                    else:
+                                        print(f"\nSorry {character.name}, better luck next time!\n")
+                            except Exception as e:
+                                print("\nAn error occurred when using the outlaw.", e,"\n")
+                                finished = False 
+
+
+                        elif character.charactertype == "Chandler":
+                            try:
+                                power_continue = input(f"{character.name}, would you like to use your Chandler power? (y/n):")
+                                if power_continue.lower() == "y":
+                                    #Draw a random symptom
+                                    symptom = random.randint(1,4)
+                                    if args.test:
+                                        print(f"{character.name}, you drew a {symptom}! You can keep it and replace with {character.status1} (1), replace with {character.status2} (2), or discard (3)")
+                                    else:
+                                        statement = f"{character.name}, you drew a {symptom}! You can keep it and replace with {character.status1} (1), replace with {character.status2} (2), or discard (3)"
+                                        send_remedy_message(
+                                            name=character.name,
+                                            phone_number=character.phone_number,
+                                            remedy_statement=statement,
+                                            account_sid=account_sid,
+                                            auth_token=auth_token,
+                                        )
+                                    chandler_in = input()
+                                    if int(chandler_in) == 3:
+                                        print("\nDiscarded!\n")
+                                    else:
+                                        character.setStatusCorn(int(chandler_in), symptom)
+                                        character.updateStatement()
+                                        if args.test:
+                                            print(character.name, character.plague_statement)
+                                        else:
+                                            send_mingle_message(
+                                                name=character.name,
+                                                phone_number=character.phone_number,
+                                                mingle_statement=character.plague_statement,
+                                                account_sid=account_sid,
+                                                auth_token=auth_token,
+                                            )
+                                finished = True
+                            except Exception as e:
+                                print("\nAn error occurred when using the chandler.", e,"\n")
+                                finished = False         
 
                 if player_input.lower() == "d":
                     if character.drawRemedy(args, account_sid, auth_token) == True:

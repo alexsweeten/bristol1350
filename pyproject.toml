@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Bristol1350"
-version = "0.1.2"
+version = "0.2.0"
 description = "Python implementation of Bristol 1350"
 
 [tool.poetry.dependencies]
@@ -19,3 +19,5 @@ toml = "*"
 
 [project.scripts]
 bristol = "bristol.game:main"
+
+
