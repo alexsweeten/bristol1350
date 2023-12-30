@@ -2201,7 +2201,7 @@ def parse_args():
 
 def introsequence(args, sid, token):
     registered_users = read_yaml_file(args.registered)["registered_users"]
-    character_dict = {
+    '''character_dict = {
         "Sheriff": "You can view 1 symptom of a player on a different cart.",
         "Friar": "You can change 1 die to be exactly what you want.",
         "Outlaw": "You have a 1/3 chance of gaining a free remedy card (happens automatically at the start of your turn).",
@@ -2211,6 +2211,9 @@ def introsequence(args, sid, token):
         "Drunkard": "You can turn 1 die into a rat of your current cart color. You are also immune from mingling whenever you use this.",
         "Rat King": "You can replace up to two apple dice with a rat of the same cart color.",
         "Knight": "You can move any player up to the front of their current cart."
+    }'''
+    character_dict = {
+        "Rat King": "You can replace up to two apple dice with a rat of the same cart color.",
     }
     ascii_art = """
   ____       _     _        _   __ ____  _____  ___  
@@ -2561,12 +2564,15 @@ def main():
                 player_input = input()
 
                 if player_input.lower() == "v":
-                    finished = False
-                    if args.char:
-                        print(f"\n{character.charactertype}: {character.characterdesc}\n")
-                    print(
-                        f"(1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
-                    )
+                    try:
+                        finished = False
+                        if args.character:
+                            print(f"\n{character.charactertype}: {character.characterdesc}\n")
+                        print(
+                            f"(1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
+                        )
+                    except Exception as e:
+                        print(f"Unable to view dice: {e}")
 
                 #TODO: Change command
                 if player_input.lower() == "a":
@@ -2775,9 +2781,10 @@ def main():
                                         else:
                                             print(f"{initial_roll.dice6_result} is already a rat!")
 
-                                    reroll1 = input("Select a second die to change (1-6, n to cancel):")
-
-                                    if reroll1 == "1":
+                                    finished = True
+                                    reroll2 = input("Select a second die to change (1-6, n to cancel):")
+                                    
+                                    if reroll2 == "1":
                                         if int(initial_roll.dice1) == 1:
                                             initial_roll.setdie(1,2)
                                             print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
@@ -2794,92 +2801,92 @@ def main():
                                             print(f"{initial_roll.dice1_result} is already a rat!")
                                         finished = True
 
-                                elif reroll1 == "2":
-                                        if int(initial_roll.dice2) == 1:
-                                            initial_roll.setdie(2,2)
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
-                                        elif int(initial_roll.dice2) == 3:
-                                            initial_roll.setdie(2,4)
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
-                                        elif int(initial_roll.dice2) == 5:
-                                            initial_roll.setdie(2,6)
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
-                                        else:
-                                            print(f"{initial_roll.dice2_result} is already a rat!")
-                                        finished = True
+                                    elif reroll2 == "2":
+                                            if int(initial_roll.dice2) == 1:
+                                                initial_roll.setdie(2,2)
+                                                print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                            elif int(initial_roll.dice2) == 3:
+                                                initial_roll.setdie(2,4)
+                                                print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                            elif int(initial_roll.dice2) == 5:
+                                                initial_roll.setdie(2,6)
+                                                print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                            else:
+                                                print(f"{initial_roll.dice2_result} is already a rat!")
+                                            finished = True
 
-                                elif reroll1 == "3":
-                                        if int(initial_roll.dice3) == 1:
-                                            initial_roll.setdie(3,2)
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
-                                        elif int(initial_roll.dice3) == 3:
-                                            initial_roll.setdie(3,4)
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
-                                        elif int(initial_roll.dice3) == 5:
-                                            initial_roll.setdie(3,6)
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
-                                        else:
-                                            print(f"{initial_roll.dice3_result} is already a rat!")
-                                        finished = True
+                                    elif reroll2 == "3":
+                                            if int(initial_roll.dice3) == 1:
+                                                initial_roll.setdie(3,2)
+                                                print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                            elif int(initial_roll.dice3) == 3:
+                                                initial_roll.setdie(3,4)
+                                                print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                            elif int(initial_roll.dice3) == 5:
+                                                initial_roll.setdie(3,6)
+                                                print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                            else:
+                                                print(f"{initial_roll.dice3_result} is already a rat!")
+                                            finished = True
 
-                                elif reroll1 == "4":
-                                        if int(initial_roll.dice4) == 1:
-                                            initial_roll.setdie(4,2)
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
-                                        elif int(initial_roll.dice4) == 3:
-                                            initial_roll.setdie(4,4)
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
-                                        elif int(initial_roll.dice4) == 5:
-                                            initial_roll.setdie(4,6)
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
-                                        else:
-                                            print(f"{initial_roll.dice4_result} is already a rat!")
-                                        finished = True
+                                    elif reroll2 == "4":
+                                            if int(initial_roll.dice4) == 1:
+                                                initial_roll.setdie(4,2)
+                                                print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                            elif int(initial_roll.dice4) == 3:
+                                                initial_roll.setdie(4,4)
+                                                print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                            elif int(initial_roll.dice4) == 5:
+                                                initial_roll.setdie(4,6)
+                                                print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                            else:
+                                                print(f"{initial_roll.dice4_result} is already a rat!")
+                                            finished = True
 
-                                elif reroll1 == "5":
-                                        if int(initial_roll.dice5) == 1:
-                                            initial_roll.setdie(5,2)
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
-                                        elif int(initial_roll.dice5) == 3:
-                                            initial_roll.setdie(5,4)
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
-                                        elif int(initial_roll.dice5) == 5:
-                                            initial_roll.setdie(5,6)
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
-                                        else:
-                                            print(f"{initial_roll.dice5_result} is already a rat!")
-                                        finished = True
+                                    elif reroll2 == "5":
+                                            if int(initial_roll.dice5) == 1:
+                                                initial_roll.setdie(5,2)
+                                                print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                            elif int(initial_roll.dice5) == 3:
+                                                initial_roll.setdie(5,4)
+                                                print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                            elif int(initial_roll.dice5) == 5:
+                                                initial_roll.setdie(5,6)
+                                                print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                            else:
+                                                print(f"{initial_roll.dice5_result} is already a rat!")
+                                            finished = True
 
-                                elif reroll1 == "6":
-                                        if int(initial_roll.dice6) == 1:
-                                            initial_roll.setdie(6,2)
-                                            print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-                                        elif int(initial_roll.dice6) == 3:
-                                            initial_roll.setdie(6,4)
-                                            print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-                                        elif int(initial_roll.dice6) == 5:
-                                            initial_roll.setdie(6,6)
-                                            print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
-                                            game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-                                        else:
-                                            print(f"{initial_roll.dice6_result} is already a rat!")
+                                    elif reroll2 == "6":
+                                            if int(initial_roll.dice6) == 1:
+                                                initial_roll.setdie(6,2)
+                                                print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                            elif int(initial_roll.dice6) == 3:
+                                                initial_roll.setdie(6,4)
+                                                print(f"\n" + Fore.YELLOW + " Apple " + bcolors.RESET + "->" + Fore.YELLOW + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                            elif int(initial_roll.dice6) == 5:
+                                                initial_roll.setdie(6,6)
+                                                print(f"\n" + Fore.MAGENTA + " Apple " + bcolors.RESET + "->" + Fore.MAGENTA + " Rat " + bcolors.RESET)
+                                                game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                            else:
+                                                print(f"{initial_roll.dice6_result} is already a rat!")
+                                            finished = True
+                                    else:
                                         finished = True
-                                else:
-                                    finished = True
                             except Exception as e:
                                 print("\nAn error occurred when using the rat king.", e,"\n")
                                 finished = False 
@@ -3105,36 +3112,6 @@ def main():
                     else:
                         finished = False
 
-                if player_input.lower() == "u":
-                    if character.hasRemedies():
-                        emerald_continue = input(
-                            f"Would you like to use an emerald for a free movement action? (y/n):"
-                        )
-                        if emerald_continue.lower() == "y":
-                            if character.hasEmerald():
-                                EmeraldAction(
-                                    board=board,
-                                    character=character,
-                                    initial_roll=initial_roll,
-                                    game=game,
-                                    args=args,
-                                    account_sid=account_sid, 
-                                    auth_token=auth_token
-                                )
-                                character.removeCard(
-                                    3, args.test, account_sid, auth_token
-                                )
-                                finished = False
-                            else:
-                                print(
-                                    f"Nice try {character.name}! You don't have an emerald!"
-                                )
-                                finished = False
-
-                    else:
-                        print(f"{character.name} does not have any remedy cards!")
-                        finished = False
-
                 if player_input.lower() == "m":
                     move_input = input(f"\nSelect a movement action: (E) Elbow, (J) Jump, (P) Push")
                     if move_input.lower() == "e":
@@ -3231,6 +3208,36 @@ def main():
                                 print(
                                     f"\nSorry {character.name}, you don't appear to have any remedy cards!\n"
                                 )
+                                finished = False
+
+                        elif remedy_input.lower() == "c":
+                            if character.hasRemedies():
+                                emerald_continue = input(
+                                    f"Would you like to use an emerald for a free movement action? (y/n):"
+                                )
+                                if emerald_continue.lower() == "y":
+                                    if character.hasEmerald():
+                                        EmeraldAction(
+                                            board=board,
+                                            character=character,
+                                            initial_roll=initial_roll,
+                                            game=game,
+                                            args=args,
+                                            account_sid=account_sid, 
+                                            auth_token=auth_token
+                                        )
+                                        character.removeCard(
+                                            3, args.test, account_sid, auth_token
+                                        )
+                                        finished = False
+                                    else:
+                                        print(
+                                            f"Nice try {character.name}! You don't have an emerald!"
+                                        )
+                                        finished = False
+
+                            else:
+                                print(f"{character.name} does not have any remedy cards!")
                                 finished = False
 
                 if player_input.lower() == "r":

@@ -81,7 +81,7 @@ There are some differences between this implementation, and the official [rules 
 
 ## Actions
 - (R) Reroll Dice: You can reroll up to 2 dice.
-- (P) Power: Use a special power (only available with characters unlocked)
+- (A) Ability: Use your special character ability (only available with characters unlocked)
 - (M) Movement: Take a movement action
   - (P) Push: Push the last person in your cart off. 
   - (E) Elbow: Elbow your way to the front of your cart.
@@ -96,6 +96,7 @@ There are some differences between this implementation, and the official [rules 
   - (A) Use Arsenic
   - (C) Use Crushed Emerald
   - (T) Use Turkey
+- (V) View current dice & character ability.
 - (S) Skip your turn
 
 # Known Bugs
