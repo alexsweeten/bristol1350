@@ -2201,7 +2201,7 @@ def parse_args():
 
 def introsequence(args, sid, token):
     registered_users = read_yaml_file(args.registered)["registered_users"]
-    '''character_dict = {
+    character_dict = {
         "Sheriff": "You can view 1 symptom of a player on a different cart.",
         "Friar": "You can change 1 die to be exactly what you want.",
         "Outlaw": "You have a 1/3 chance of gaining a free remedy card (happens automatically at the start of your turn).",
@@ -2211,9 +2211,6 @@ def introsequence(args, sid, token):
         "Drunkard": "You can turn 1 die into a rat of your current cart color. You are also immune from mingling whenever you use this.",
         "Rat King": "You can replace up to two apple dice with a rat of the same cart color.",
         "Knight": "You can move any player up to the front of their current cart."
-    }'''
-    character_dict = {
-        "Rat King": "You can replace up to two apple dice with a rat of the same cart color.",
     }
     ascii_art = """
   ____       _     _        _   __ ____  _____  ___  
@@ -3069,6 +3066,7 @@ def main():
                                 finished = False 
 
                         elif character.charactertype == "Chandler":
+                            print("\n Ms. Chanandeler Bong\n")
                             try:
                                 power_continue = input(f"{character.name}, would you like to use your Chandler power? (y/n):")
                                 if power_continue.lower() == "y":

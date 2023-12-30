@@ -106,3 +106,4 @@ There are some differences between this implementation, and the official [rules 
 - When elbowing people, people who are behind you can respond with a whip.
 - Lock doesn't work against turkey (and probably other dice rolling effects)
 - If outlaw backs out of an action, they get another chance for a free remedy.
+- Hitting 'n' sometimes doesn't backtrack
