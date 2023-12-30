@@ -2177,7 +2177,6 @@ def parse_args():
     parser = argparse.ArgumentParser(add_help=False)
 
     parser.add_argument("-t", "--test", action="store_true", help="Test game. Sets symptoms and remedy info to screen.")
-    parser.add_argument("-d", "--demo", action="store_true", help="Preset a demo game")
     parser.add_argument("-p", "--players", nargs="+", help="People playing")
     parser.add_argument(
         "-f", "--finish", default=17, type=int, help="end number condition"
@@ -2511,7 +2510,10 @@ def main():
         tmp = board.determineStartPlayer()
         list_of_characters.remove(tmp)
         list_of_characters.insert(0, tmp)
-        print("(R) Reroll, (T) Use Turkey, (D) Draw Remedy, (A) Use Arsenic, (U) Use Emerald, (P) Push, (E) Elbow, (J) Jump, (S) Skip Turn, (V) View rolled dice \n")
+        if args.character:
+            print("(A) Use Ability, (R) Reroll, (D) Draw Remedy, (M) Move Character, (U) Use Remedy, (V) View rolled dice, (S) Skip turn \n")
+        else:
+            print("(R) Reroll, (D) Draw Remedy, (M) Move Character, (U) Use Remedy, (V) View rolled dice, (S) Skip turn \n")
         print(f"\nRolling dice:\n")
         time.sleep(0.5)
         initial_roll = Dice()
@@ -2560,19 +2562,20 @@ def main():
 
                 if player_input.lower() == "v":
                     finished = False
-                    print(f"\n{character.charactertype}: {character.characterdesc}\n")
+                    if args.char:
+                        print(f"\n{character.charactertype}: {character.characterdesc}\n")
                     print(
                         f"(1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}"
                     )
 
                 #TODO: Change command
-                if player_input.lower() == "w":
+                if player_input.lower() == "a":
                     if not args.character:
                         print(f"\nSorry, character powers are not available this game! Run `bristol -c` for character powers!\n")
                     else:
                         if character.charactertype == "Mason":
                             try:
-                                power_continue = input(f"{character.name}, would you like to use your Maison power? (y/n):")
+                                power_continue = input(f"{character.name}, would you like to use your Mason power? (y/n):")
                                 if power_continue.lower() == "y":
                                     reroll1 = input("Select a die to reroll (1-6):")
                                     initial_roll.reroll(int(reroll1), None)
@@ -2585,7 +2588,7 @@ def main():
                                     game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
                                     game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
                                     game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-                                    getlock1 = input(f"Now select a dice to unlock(1-6):")
+                                    getlock1 = input(f"Now select a dice to lock(1-6):")
                                     if getlock1 == "1":
                                         initial_roll.dice1_lock = True
                                     if getlock1 == "2":
@@ -2772,9 +2775,9 @@ def main():
                                         else:
                                             print(f"{initial_roll.dice6_result} is already a rat!")
 
-                                reroll1 = input("Select a second die to change (1-6, n to cancel):")
+                                    reroll1 = input("Select a second die to change (1-6, n to cancel):")
 
-                                if reroll1 == "1":
+                                    if reroll1 == "1":
                                         if int(initial_roll.dice1) == 1:
                                             initial_roll.setdie(1,2)
                                             print(f"\n" + Fore.CYAN + " Apple " + bcolors.RESET + "->" + Fore.CYAN + " Rat " + bcolors.RESET)
@@ -3057,26 +3060,6 @@ def main():
                             except Exception as e:
                                 print("\nAn error occurred when using the countess.", e,"\n")
                                 finished = False 
-                                    
-                        elif character.charactertype == "Outlaw":
-                            try:
-                                power_continue = input(f"{character.name}, would you like to use your Outlaw power? (y/n):")
-                                if power_continue.lower() == "y":
-                                    mariokart = character.getCart()
-                                    roll = random.randint(1,3)
-                                    #roll = mariokart
-                                    if roll == mariokart:
-                                        print(f"Congratulations {character.name}! You got a free remedy\n")
-                                        if character.drawRemedy(args, account_sid, auth_token) == True:
-                                            finished = False
-                                        else:
-                                            finished = False
-                                    else:
-                                        print(f"\nSorry {character.name}, better luck next time!\n")
-                            except Exception as e:
-                                print("\nAn error occurred when using the outlaw.", e,"\n")
-                                finished = False 
-
 
                         elif character.charactertype == "Chandler":
                             try:
@@ -3097,7 +3080,7 @@ def main():
                                         )
                                     chandler_in = input()
                                     if int(chandler_in) == 3:
-                                        print("\nDiscarded!\n")
+                                        print("\nDiscarded!")
                                     else:
                                         character.setStatusCorn(int(chandler_in), symptom)
                                         character.updateStatement()
@@ -3152,95 +3135,103 @@ def main():
                         print(f"{character.name} does not have any remedy cards!")
                         finished = False
 
-                if player_input.lower() == "e":
-                    if board.elbow(character, args.test, account_sid, auth_token) == True:
-                        finished = True
-                        board.displayCarts(game, args)
-                    else:
-                        finished = False
+                if player_input.lower() == "m":
+                    move_input = input(f"\nSelect a movement action: (E) Elbow, (J) Jump, (P) Push")
+                    if move_input.lower() == "e":
+                        if board.elbow(character, args.test, account_sid, auth_token) == True:
+                            finished = True
+                            board.displayCarts(game, args)
+                        else:
+                            finished = False
 
-                if player_input.lower() == "j":
-                    if board.jump(character, args.test, account_sid, auth_token) == True:
-                        finished = True
-                        board.displayCarts(game, args)
-                    else:
-                        finished = False
+                    elif move_input.lower() == "j":
+                        if board.jump(character, args.test, account_sid, auth_token) == True:
+                            finished = True
+                            board.displayCarts(game, args)
+                        else:
+                            finished = False
 
-                if player_input.lower() == "p":
-                    if board.push(character, args.test, account_sid, auth_token) == True:
-                        finished = True
-                        board.displayCarts(game, args)
-                    else:
-                        finished = False
+                    elif move_input.lower() == "p":
+                        if board.push(character, args.test, account_sid, auth_token) == True:
+                            finished = True
+                            board.displayCarts(game, args)
+                        else:
+                            finished = False
 
                 if player_input.lower() == "s":
                     finished = True
 
-                if player_input.lower() == "t":
-                    if character.hasTurkey():
-                        print("\nGobble gobble\n")
-                        # TODO: Have turkey unable to reroll locked arsenic dice. I'm too lazy to add that now
-                        reroll1 = input("Select the first dice to reroll (1-6):")
-                        reroll2 = input("Select the second dice to reroll (1-6):")
-                        reroll3 = input("Select the second dice to reroll (1-6):")
-                        reroll4 = input("Select the second dice to reroll (1-6):")
-                        initial_roll.reroll(int(reroll1), int(reroll2))
-                        initial_roll.reroll(int(reroll3), int(reroll4))
-                        print(
-                            f"\nRerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}\n"
-                        )
-                        game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
-                        game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
-                        game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
-                        game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
-                        game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
-                        game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
-                        character.removeCard(5, args.test, account_sid, auth_token)
-                        finished = True
-                    else:
-                        print(
-                            f"\nSorry {character.name}, you don't appear to have a turkey!\n"
-                        )
+                if player_input.lower() == "u":
+                    if not character.remedycard1:
+                        print(f"\nSorry{character.name}, you don't have any remedy cards!")
                         finished = False
-
-                if player_input.lower() == "a":
-                    if character.hasRemedies():
-                        if character.hasArsenic():
-                            getlock1 = input(f"Get first dice to lock (1-6):")
-                            getlock2 = input(f"Get second dice to lock (1-6):")
-                            if getlock1 == "1" or getlock2 == "1":
-                                initial_roll.dice1_lock = True
-
-                            if getlock1 == "2" or getlock2 == "2":
-                                initial_roll.dice2_lock = True
-                            if getlock1 == "3" or getlock2 == "3":
-                                initial_roll.dice3_lock = True
-                            if getlock1 == "4" or getlock2 == "4":
-                                initial_roll.dice4_lock = True
-                            if getlock1 == "5" or getlock2 == "5":
-                                initial_roll.dice5_lock = True
-                            if getlock1 == "6" or getlock2 == "6":
-                                initial_roll.dice6_lock = True
-                            print(
-                                f"{character.name} has successfully locked dice {getlock1} and {getlock2}!"
-                            )
-                            print("cheese")
-                            print(getlock1, getlock2)
-                            game.update_lock_symbol(int(getlock1), True, False)
-                            game.update_lock_symbol(int(getlock2), True, False)
-                            character.removeCard(1, args.test, account_sid, auth_token)
-                            finished = False
-                        else:
-                            print(
-                                f"\nSorry {character.name}, you don't appear to have any arsenic!\n"
-                            )
-                            finished = False
-
                     else:
-                        print(
-                            f"\nSorry {character.name}, you don't appear to have any remedy cards!\n"
-                        )
-                        finished = False
+                        remedy_input = input(f"\nSelect a remedy card to use: (A) Arsenic, (C) Crushed Emeralds, (T) Turkey")
+                        if remedy_input.lower() == "t":
+                            if character.hasTurkey():
+                                print("\nGobble gobble\n")
+                                # TODO: Have turkey unable to reroll locked arsenic dice. I'm too lazy to add that now
+                                reroll1 = input("Select the first dice to reroll (1-6):")
+                                reroll2 = input("Select the second dice to reroll (1-6):")
+                                reroll3 = input("Select the second dice to reroll (1-6):")
+                                reroll4 = input("Select the second dice to reroll (1-6):")
+                                initial_roll.reroll(int(reroll1), int(reroll2))
+                                initial_roll.reroll(int(reroll3), int(reroll4))
+                                print(
+                                    f"\nRerolled dice to: (1) {initial_roll.dice1_result}, (2) {initial_roll.dice2_result}, (3) {initial_roll.dice3_result}, (4) {initial_roll.dice4_result}, (5) {initial_roll.dice5_result}, (6) {initial_roll.dice6_result}\n"
+                                )
+                                game.update_dice_value(status=int(initial_roll.dice1),die_num=1)
+                                game.update_dice_value(status=int(initial_roll.dice2),die_num=2)
+                                game.update_dice_value(status=int(initial_roll.dice3),die_num=3)
+                                game.update_dice_value(status=int(initial_roll.dice4),die_num=4)
+                                game.update_dice_value(status=int(initial_roll.dice5),die_num=5)
+                                game.update_dice_value(status=int(initial_roll.dice6),die_num=6)
+                                character.removeCard(5, args.test, account_sid, auth_token)
+                                finished = True
+                            else:
+                                print(
+                                    f"\nSorry {character.name}, you don't appear to have a turkey!\n"
+                                )
+                                finished = False
+
+                        elif remedy_input.lower() == "a":
+                            if character.hasRemedies():
+                                if character.hasArsenic():
+                                    getlock1 = input(f"Get first dice to lock (1-6):")
+                                    getlock2 = input(f"Get second dice to lock (1-6):")
+                                    if getlock1 == "1" or getlock2 == "1":
+                                        initial_roll.dice1_lock = True
+
+                                    if getlock1 == "2" or getlock2 == "2":
+                                        initial_roll.dice2_lock = True
+                                    if getlock1 == "3" or getlock2 == "3":
+                                        initial_roll.dice3_lock = True
+                                    if getlock1 == "4" or getlock2 == "4":
+                                        initial_roll.dice4_lock = True
+                                    if getlock1 == "5" or getlock2 == "5":
+                                        initial_roll.dice5_lock = True
+                                    if getlock1 == "6" or getlock2 == "6":
+                                        initial_roll.dice6_lock = True
+                                    print(
+                                        f"{character.name} has successfully locked dice {getlock1} and {getlock2}!"
+                                    )
+                                    print("cheese")
+                                    print(getlock1, getlock2)
+                                    game.update_lock_symbol(int(getlock1), True, False)
+                                    game.update_lock_symbol(int(getlock2), True, False)
+                                    character.removeCard(1, args.test, account_sid, auth_token)
+                                    finished = False
+                                else:
+                                    print(
+                                        f"\nSorry {character.name}, you don't appear to have any arsenic!\n"
+                                    )
+                                    finished = False
+
+                            else:
+                                print(
+                                    f"\nSorry {character.name}, you don't appear to have any remedy cards!\n"
+                                )
+                                finished = False
 
                 if player_input.lower() == "r":
                     rollpass = True
@@ -3399,7 +3390,7 @@ def main():
                                                 finished = True
                                             else:
                                                 print(
-                                                    f"\nSorry {character.name}, you don't appear to have a chicken remedy!\n"
+                                                    f"\nSorry {character.name}, you don't appear to have a chicken remedy!"
                                                 )
                                                 finished = True
                                         else:
