@@ -1,0 +1,11 @@
+registration.yml
+
+.DS_Store
+__pycache__/
+*.py[cod]
+
+build/
+dist/
+*.egg-info/
+venv/
+.venv/
