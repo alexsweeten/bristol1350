@@ -1,4 +1,6 @@
 registration.yml
+game_state.txt
+mingle_*.svg
 
 .DS_Store
 __pycache__/
