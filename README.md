@@ -100,8 +100,6 @@ There are some differences between this implementation, and the official [rules 
 - (S) Skip your turn
 
 # Known Bugs
-- Carts can currently hold >3 people.
-- Jumping to a full cart doesn't swap first of second cart with last of first cart.
 - In carts that die from the plague once reaching the end, one person ends up surviving.
 - When elbowing people, people who are behind you can respond with a whip.
 - Lock doesn't work against turkey (and probably other dice rolling effects)
