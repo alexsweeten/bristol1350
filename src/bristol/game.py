@@ -5,7 +5,6 @@ import math
 import os
 import random
 import sys
-import time
 
 try:
     from colorama import Fore, Style
@@ -26,8 +25,10 @@ from bristol.send_sms import (
 
 try:
     import tkinter as tk
+    from tkinter import filedialog
 except ImportError as exc:
     tk = None
+    filedialog = None
     TK_IMPORT_ERROR = exc
 else:
     TK_IMPORT_ERROR = None
@@ -66,6 +67,7 @@ MINGLE_DEFAULT_PROFILES = (
 )
 MINGLE_SIM_TRIALS = 10_000
 MINGLE_SIM_MAX_CART_SIZE = 3
+CART_CAPACITY = 3
 MINGLE_SIM_BASE_CART_MINGLE_COUNTS = (1, 2, 3, 4, 5, 6)
 MINGLE_SIM_SWITCH_EXISTING_PRIOR_MINGLES = (1, 2, 3, 4)
 MINGLE_SIM_SWITCH_PRIOR_MINGLES = (0, 1, 2, 3, 4)
@@ -83,6 +85,17 @@ CART_LABELS = {
     1: "blue cart",
     2: "yellow cart",
     3: "purple cart",
+}
+CHARACTER_TYPES = {
+    "Sheriff": "You can view 1 symptom of a player on a different cart.",
+    "Friar": "You can change 1 die to be exactly what you want.",
+    "Outlaw": "You have a 1/3 chance of gaining a free remedy card (happens automatically at the start of your turn).",
+    "Mason": "You can reroll 1 die, then lock one die.",
+    "Chandler": "You can draw a random symptom and choose to replace it with one of your own.",
+    "Countess": "You can draw 2 remedies and keep 1 of them.",
+    "Drunkard": "You can turn 1 die into a rat of your current cart color. You are also immune from mingling whenever you use this.",
+    "Rat King": "You can replace up to two apple dice with a rat of the same cart color.",
+    "Knight": "You can move any player up to the front of their current cart.",
 }
 
 
@@ -387,11 +400,12 @@ class BristolGame:
         )
         self.redraw_action_log()
 
-    def update_order(self, list_of_characters):
+    def update_order(self, list_of_characters, current_character=None):
         for item in self.order_items:
             self.canvas.delete(item)
         self.order_items = []
 
+        current_name = getattr(current_character, "name", current_character)
         has_character_icons = any(
             getattr(character, "charactertype", None)
             for character in list_of_characters
@@ -409,11 +423,29 @@ class BristolGame:
 
         for index, character in enumerate(list_of_characters, 1):
             row_y = start_y + (index - 1) * row_height
+            is_current = character is current_character or character.name == current_name
             if has_character_icons and getattr(character, "charactertype", None):
                 self.draw_turn_order_character_row(
-                    index, character, start_x, row_y, row_height
+                    index,
+                    character,
+                    start_x,
+                    row_y,
+                    row_height,
+                    is_current=is_current,
                 )
             else:
+                if is_current:
+                    self.order_items.append(
+                        self.canvas.create_rectangle(
+                            start_x - 10,
+                            row_y - 4,
+                            self.WIDTH - 38,
+                            row_y + 28,
+                            fill="#d8f5c7",
+                            outline="#2f7d32",
+                            width=2,
+                        )
+                    )
                 self.order_items.append(
                     self.canvas.create_text(
                         start_x,
@@ -421,7 +453,7 @@ class BristolGame:
                         text=f"{index}. {character.name}",
                         anchor="nw",
                         font=("Arial", 17, "bold"),
-                        fill="#1f2933",
+                        fill="#14532d" if is_current else "#1f2933",
                     )
                 )
         self.refresh()
@@ -479,7 +511,9 @@ class BristolGame:
         self.redraw_action_log()
         self.refresh()
 
-    def draw_turn_order_character_row(self, index, character, x, y, row_height):
+    def draw_turn_order_character_row(
+        self, index, character, x, y, row_height, is_current=False
+    ):
         row_width = 270
         card_height = max(50, min(68, row_height - 6))
         self.order_items.append(
@@ -488,9 +522,9 @@ class BristolGame:
                 y - 4,
                 x + row_width,
                 y + card_height,
-                fill="#fff7e6",
-                outline="#d6b56d",
-                width=1,
+                fill="#d8f5c7" if is_current else "#fff7e6",
+                outline="#2f7d32" if is_current else "#d6b56d",
+                width=2 if is_current else 1,
             )
         )
         self.draw_character_icon(character.charactertype, x + 22, y + 25)
@@ -1247,11 +1281,575 @@ class BristolGame:
         )
 
 
+class ToolTip:
+    def __init__(self, widget, text_func):
+        self.widget = widget
+        self.text_func = text_func
+        self.window = None
+        self.widget.bind("<Enter>", self.show)
+        self.widget.bind("<Leave>", self.hide)
+        self.widget.bind("<ButtonPress>", self.hide)
+
+    def show(self, _event=None):
+        text = self.text_func()
+        if not text or self.window is not None:
+            return
+
+        x = self.widget.winfo_rootx() + 18
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 8
+        self.window = tk.Toplevel(self.widget)
+        self.window.wm_overrideredirect(True)
+        self.window.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(
+            self.window,
+            text=text,
+            justify="left",
+            wraplength=280,
+            bg="#332b20",
+            fg="#fff7e6",
+            relief="solid",
+            bd=1,
+            padx=10,
+            pady=7,
+            font=("Georgia", 11),
+        )
+        label.pack()
+
+    def hide(self, _event=None):
+        if self.window is not None:
+            self.window.destroy()
+            self.window = None
+
+
+class LaunchScreen:
+    WIDTH = 920
+    HEIGHT = 840
+    BG = "#ede2cd"
+    PANEL = "#f8f0db"
+    INK = "#161514"
+    MUTED = "#5f533f"
+    BORDER = "#b8a887"
+    BUTTON = "#332b20"
+    BUTTON_TEXT = "#fff7e6"
+    FONT = "Georgia"
+
+    def __init__(self, master, args):
+        self.master = master
+        self.args = args
+        self.result = None
+        self.logo_image = None
+        self.registered_names = []
+        self.done_var = tk.BooleanVar(value=False)
+        self.player_count_var = tk.StringVar(value=str(len(args.players or []) or 4))
+        self.finish_var = tk.StringVar(value=str(args.finish))
+        self.registered_var = tk.StringVar(value=args.registered)
+        self.test_var = tk.BooleanVar(value=args.test)
+        self.character_var = tk.BooleanVar(value=args.character)
+        self.character_mode_var = tk.StringVar(value="Random")
+        self.allow_overlapping_characters_var = tk.BooleanVar(
+            value=getattr(args, "allow_overlapping_characters", False)
+        )
+        self.mingle_odds_var = tk.StringVar(
+            value=(
+                ""
+                if args.mingle_odds is None
+                else " ".join(str(odd) for odd in args.mingle_odds)
+            )
+        )
+        self.error_var = tk.StringVar(value="")
+        self.player_vars = [tk.StringVar(value="") for _ in range(MAX_PLAYERS)]
+        self.character_vars = [tk.StringVar(value="Random") for _ in range(MAX_PLAYERS)]
+        for index, player in enumerate(args.players or []):
+            if index < MAX_PLAYERS:
+                self.player_vars[index].set(player)
+
+        self.master.title("Bristol 1350 Setup")
+        self.master.geometry(f"{self.WIDTH}x{self.HEIGHT}")
+        self.master.configure(bg=self.BG)
+        self.master.protocol("WM_DELETE_WINDOW", self.cancel)
+        self.frame = tk.Frame(self.master, bg=self.BG)
+        self.frame.pack(fill="both", expand=True)
+        self.build()
+        self.load_registered_names(show_errors=False)
+        self.sync_player_rows()
+        self.update_character_controls()
+
+    def build(self):
+        header = tk.Frame(self.frame, bg=self.BG)
+        header.pack(fill="x", padx=34, pady=(24, 12))
+
+        logo_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../images/logo.png")
+        )
+        try:
+            self.logo_image = tk.PhotoImage(file=logo_path)
+            subsample = max(1, self.logo_image.width() // 620)
+            if subsample > 1:
+                self.logo_image = self.logo_image.subsample(subsample, subsample)
+            tk.Label(header, image=self.logo_image, bg=self.BG).pack(anchor="center")
+        except tk.TclError:
+            tk.Label(
+                header,
+                text="Bristol 1350",
+                bg=self.BG,
+                fg=self.INK,
+                font=(self.FONT, 52, "bold"),
+            ).pack(anchor="center")
+
+        tk.Label(
+            header,
+            text="Set up the game, then launch the table view.",
+            bg=self.BG,
+            fg=self.MUTED,
+            font=(self.FONT, 15),
+        ).pack(anchor="center", pady=(6, 0))
+
+        body = tk.Frame(self.frame, bg=self.BG)
+        body.pack(fill="both", expand=True, padx=34, pady=12)
+        body.columnconfigure(0, weight=4)
+        body.columnconfigure(1, weight=3)
+
+        players_panel = self.panel(body)
+        players_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        options_panel = self.panel(body)
+        options_panel.grid(row=0, column=1, sticky="nsew", padx=(14, 0))
+
+        self.build_players_panel(players_panel)
+        self.build_options_panel(options_panel)
+
+        footer = tk.Frame(self.frame, bg=self.BG)
+        footer.pack(fill="x", padx=34, pady=(4, 24))
+        tk.Label(
+            footer,
+            textvariable=self.error_var,
+            bg=self.BG,
+            fg="#8b1e16",
+            font=(self.FONT, 12, "bold"),
+            anchor="w",
+        ).pack(side="left", fill="x", expand=True)
+        tk.Button(
+            footer,
+            text="Start Game",
+            command=self.start_game,
+            bg=self.BUTTON,
+            fg=self.BUTTON_TEXT,
+            activebackground="#4a3b2a",
+            activeforeground=self.BUTTON_TEXT,
+            font=(self.FONT, 16, "bold"),
+            padx=28,
+            pady=10,
+            relief="flat",
+        ).pack(side="right")
+
+    def panel(self, parent):
+        return tk.Frame(
+            parent,
+            bg=self.PANEL,
+            highlightbackground=self.BORDER,
+            highlightthickness=2,
+            padx=22,
+            pady=18,
+        )
+
+    def label(self, parent, text, size=13, bold=False):
+        return tk.Label(
+            parent,
+            text=text,
+            bg=self.PANEL,
+            fg=self.INK,
+            anchor="w",
+            font=(self.FONT, size, "bold" if bold else "normal"),
+        )
+
+    def build_players_panel(self, panel):
+        self.label(panel, "Players", size=24, bold=True).grid(
+            row=0, column=0, columnspan=3, sticky="w"
+        )
+        self.label(panel, "Count", bold=True).grid(row=1, column=0, sticky="w", pady=(18, 8))
+        tk.Spinbox(
+            panel,
+            from_=1,
+            to=MAX_PLAYERS,
+            textvariable=self.player_count_var,
+            command=self.sync_player_rows,
+            width=5,
+            font=(self.FONT, 13),
+            bg="#fff7e6",
+            fg=self.INK,
+        ).grid(row=1, column=1, sticky="w", pady=(18, 8))
+
+        self.label(panel, "Name", bold=True).grid(row=2, column=1, sticky="w", pady=(10, 2))
+        self.label(panel, "Character", bold=True).grid(row=2, column=2, sticky="w", pady=(10, 2))
+
+        self.player_rows = []
+        self.character_rows = []
+        character_options = ["Random"] + list(CHARACTER_TYPES)
+        for index in range(MAX_PLAYERS):
+            label = self.label(panel, f"{index + 1}.")
+            entry = tk.Entry(
+                panel,
+                textvariable=self.player_vars[index],
+                font=(self.FONT, 13),
+                bg="#fffaf0",
+                fg=self.INK,
+                insertbackground=self.INK,
+                relief="solid",
+                bd=1,
+                width=21,
+            )
+            option = tk.OptionMenu(
+                panel,
+                self.character_vars[index],
+                *character_options,
+            )
+            option.configure(
+                bg="#fffaf0",
+                fg=self.INK,
+                activebackground="#efe3cc",
+                activeforeground=self.INK,
+                font=(self.FONT, 11),
+                relief="solid",
+                bd=1,
+                width=11,
+                highlightthickness=0,
+            )
+            option["menu"].configure(
+                bg="#fffaf0",
+                fg=self.INK,
+                activebackground="#75695f",
+                activeforeground="#fff7e6",
+                font=(self.FONT, 11),
+            )
+            label.grid(row=index + 3, column=0, sticky="w", pady=4)
+            entry.grid(row=index + 3, column=1, sticky="ew", pady=4, padx=(0, 8))
+            option.grid(row=index + 3, column=2, sticky="ew", pady=4)
+            self.player_rows.append((label, entry))
+            self.character_rows.append(option)
+            ToolTip(
+                option,
+                lambda character_var=self.character_vars[index]: self.character_tooltip_text(
+                    character_var
+                ),
+            )
+
+        panel.columnconfigure(1, weight=1)
+        panel.columnconfigure(2, weight=1)
+
+        self.label(panel, "Registered Players", size=15, bold=True).grid(
+            row=13, column=0, columnspan=3, sticky="w", pady=(20, 6)
+        )
+        self.registered_listbox = tk.Listbox(
+            panel,
+            selectmode="multiple",
+            height=6,
+            exportselection=False,
+            font=(self.FONT, 12),
+            bg="#fffaf0",
+            fg=self.INK,
+            selectbackground="#75695f",
+            selectforeground="#fff7e6",
+            relief="solid",
+            bd=1,
+        )
+        self.registered_listbox.grid(row=14, column=0, columnspan=3, sticky="ew")
+        self.registered_listbox.bind("<<ListboxSelect>>", self.use_selected_players)
+
+    def build_options_panel(self, panel):
+        self.label(panel, "Game Options", size=24, bold=True).pack(anchor="w")
+
+        self.option_label(panel, "Finish line")
+        tk.Spinbox(
+            panel,
+            from_=1,
+            to=50,
+            textvariable=self.finish_var,
+            width=7,
+            font=(self.FONT, 13),
+            bg="#fff7e6",
+            fg=self.INK,
+        ).pack(anchor="w")
+
+        tk.Checkbutton(
+            panel,
+            text="Character powers",
+            variable=self.character_var,
+            command=self.update_character_controls,
+            bg=self.PANEL,
+            fg=self.INK,
+            activebackground=self.PANEL,
+            font=(self.FONT, 13),
+            selectcolor="#fff7e6",
+        ).pack(anchor="w", pady=(18, 4))
+
+        character_options = tk.Frame(panel, bg=self.PANEL)
+        character_options.pack(fill="x", padx=(18, 0), pady=(0, 6))
+        tk.Radiobutton(
+            character_options,
+            text="Random characters",
+            variable=self.character_mode_var,
+            value="Random",
+            command=self.update_character_controls,
+            bg=self.PANEL,
+            fg=self.INK,
+            activebackground=self.PANEL,
+            font=(self.FONT, 12),
+            selectcolor="#fff7e6",
+        ).pack(anchor="w")
+        tk.Radiobutton(
+            character_options,
+            text="Choose characters",
+            variable=self.character_mode_var,
+            value="Choose",
+            command=self.update_character_controls,
+            bg=self.PANEL,
+            fg=self.INK,
+            activebackground=self.PANEL,
+            font=(self.FONT, 12),
+            selectcolor="#fff7e6",
+        ).pack(anchor="w")
+        tk.Checkbutton(
+            character_options,
+            text="Allow overlapping characters",
+            variable=self.allow_overlapping_characters_var,
+            command=self.update_character_controls,
+            bg=self.PANEL,
+            fg=self.INK,
+            activebackground=self.PANEL,
+            font=(self.FONT, 12),
+            selectcolor="#fff7e6",
+        ).pack(anchor="w", pady=(4, 0))
+
+        tk.Checkbutton(
+            panel,
+            text="Test mode",
+            variable=self.test_var,
+            bg=self.PANEL,
+            fg=self.INK,
+            activebackground=self.PANEL,
+            font=(self.FONT, 13),
+            selectcolor="#fff7e6",
+        ).pack(anchor="w", pady=4)
+
+        self.option_label(panel, "Registration file")
+        reg_row = tk.Frame(panel, bg=self.PANEL)
+        reg_row.pack(fill="x")
+        tk.Entry(
+            reg_row,
+            textvariable=self.registered_var,
+            font=(self.FONT, 11),
+            bg="#fffaf0",
+            fg=self.INK,
+            relief="solid",
+            bd=1,
+        ).pack(side="left", fill="x", expand=True)
+        tk.Button(
+            reg_row,
+            text="Browse",
+            command=self.browse_registration,
+            bg="#75695f",
+            fg="#fff7e6",
+            activebackground="#5f5349",
+            activeforeground="#fff7e6",
+            font=(self.FONT, 11, "bold"),
+            relief="flat",
+            padx=10,
+        ).pack(side="left", padx=(8, 0))
+        tk.Button(
+            panel,
+            text="Load Registered Players",
+            command=lambda: self.load_registered_names(show_errors=True),
+            bg="#75695f",
+            fg="#fff7e6",
+            activebackground="#5f5349",
+            activeforeground="#fff7e6",
+            font=(self.FONT, 12, "bold"),
+            relief="flat",
+            pady=5,
+        ).pack(anchor="w", pady=(8, 0))
+
+        self.option_label(panel, "Mingle odds")
+        tk.Entry(
+            panel,
+            textvariable=self.mingle_odds_var,
+            font=(self.FONT, 12),
+            bg="#fffaf0",
+            fg=self.INK,
+            relief="solid",
+            bd=1,
+        ).pack(fill="x")
+        tk.Label(
+            panel,
+            text="Optional: four weights for symptoms 1-4.",
+            bg=self.PANEL,
+            fg=self.MUTED,
+            font=(self.FONT, 10),
+            anchor="w",
+        ).pack(fill="x", pady=(4, 0))
+
+    def option_label(self, parent, text):
+        self.label(parent, text, bold=True).pack(anchor="w", pady=(18, 6))
+
+    def character_tooltip_text(self, character_var):
+        character_name = character_var.get()
+        if character_name == "Random":
+            return "A character will be assigned randomly when the game starts."
+        return CHARACTER_TYPES.get(character_name, "")
+
+    def sync_player_rows(self):
+        try:
+            count = int(self.player_count_var.get())
+        except ValueError:
+            count = 1
+        count = max(1, min(MAX_PLAYERS, count))
+        self.player_count_var.set(str(count))
+        for index, (label, entry) in enumerate(self.player_rows):
+            state = "normal" if index < count else "disabled"
+            label.configure(fg=self.INK if index < count else self.MUTED)
+            entry.configure(state=state)
+        self.update_character_controls()
+
+    def update_character_controls(self):
+        if not hasattr(self, "character_rows"):
+            return
+        try:
+            count = int(self.player_count_var.get())
+        except ValueError:
+            count = 1
+        choose_enabled = self.character_var.get() and self.character_mode_var.get() == "Choose"
+        for index, option in enumerate(self.character_rows):
+            state = "normal" if choose_enabled and index < count else "disabled"
+            option.configure(state=state)
+
+    def use_selected_players(self, _event=None):
+        selected = [self.registered_listbox.get(i) for i in self.registered_listbox.curselection()]
+        if not selected:
+            return
+        selected = selected[:MAX_PLAYERS]
+        self.player_count_var.set(str(len(selected)))
+        for index, var in enumerate(self.player_vars):
+            var.set(selected[index] if index < len(selected) else "")
+        self.sync_player_rows()
+
+    def browse_registration(self):
+        if filedialog is None:
+            return
+        path = filedialog.askopenfilename(
+            title="Choose registration file",
+            filetypes=(("YAML files", "*.yml *.yaml"), ("All files", "*")),
+        )
+        if path:
+            self.registered_var.set(path)
+            self.load_registered_names(show_errors=True)
+
+    def load_registered_names(self, show_errors):
+        self.registered_listbox.delete(0, tk.END)
+        self.registered_names = []
+        path = self.registered_var.get().strip()
+        if not path:
+            return
+        if not os.path.exists(path):
+            if show_errors:
+                self.error_var.set("Registration file was not found.")
+            return
+        data = read_yaml_file(path)
+        if not isinstance(data, dict):
+            if show_errors:
+                self.error_var.set("Unable to read registered players from that file.")
+            return
+        registered_users = data.get("registered_users")
+        if not isinstance(registered_users, dict):
+            if show_errors:
+                self.error_var.set("Registration file must include registered_users.")
+            return
+        self.error_var.set("")
+        self.registered_names = sorted(str(name) for name in registered_users)
+        for name in self.registered_names:
+            self.registered_listbox.insert(tk.END, name)
+
+    def start_game(self):
+        self.sync_player_rows()
+        try:
+            player_count = int(self.player_count_var.get())
+            finish = int(self.finish_var.get())
+        except ValueError:
+            self.error_var.set("Player count and finish line must be numbers.")
+            return
+
+        players = [
+            self.player_vars[index].get().strip()
+            for index in range(player_count)
+        ]
+        if any(not player for player in players):
+            self.error_var.set("Enter a name for every active player.")
+            return
+        if len(players) != len(set(players)):
+            self.error_var.set("Player names must be unique.")
+            return
+        if finish < 1:
+            self.error_var.set("Finish line must be at least 1.")
+            return
+
+        character_assignments = None
+        random_characters = True
+        allow_overlaps = self.allow_overlapping_characters_var.get()
+        if self.character_var.get() and self.character_mode_var.get() == "Choose":
+            random_characters = False
+            character_assignments = [
+                self.character_vars[index].get()
+                for index in range(player_count)
+            ]
+            if any(character == "Random" for character in character_assignments):
+                self.error_var.set("Choose a character for every active player.")
+                return
+            if not allow_overlaps and len(character_assignments) != len(set(character_assignments)):
+                self.error_var.set("Either choose unique characters or allow overlaps.")
+                return
+
+        mingle_odds = None
+        odds_text = self.mingle_odds_var.get().strip()
+        if odds_text:
+            try:
+                parsed_odds = tuple(float(part) for part in odds_text.replace(",", " ").split())
+            except ValueError:
+                self.error_var.set("Mingle odds must be four numeric weights.")
+                return
+            if len(parsed_odds) != 4:
+                self.error_var.set("Mingle odds must include exactly four weights.")
+                return
+            if any(odd < 0 for odd in parsed_odds) or sum(parsed_odds) <= 0:
+                self.error_var.set("Mingle odds must be non-negative with a positive total.")
+                return
+            mingle_odds = parsed_odds
+
+        self.args.players = players
+        self.args.finish = finish
+        self.args.registered = self.registered_var.get().strip()
+        self.args.test = self.test_var.get()
+        self.args.gui = True
+        self.args.no_gui = False
+        self.args.character = self.character_var.get()
+        self.args.random_characters = random_characters
+        self.args.allow_overlapping_characters = allow_overlaps
+        self.args.character_assignments = character_assignments
+        self.args.mingle_odds = mingle_odds
+        self.result = self.args
+        self.frame.destroy()
+        self.done_var.set(True)
+
+    def cancel(self):
+        self.result = None
+        self.done_var.set(True)
+
+    def run(self):
+        self.master.wait_variable(self.done_var)
+        return self.result
+
+
 class ConsoleGame:
     def log_action(self, message):
         return None
 
-    def update_order(self, list_of_characters):
+    def update_order(self, list_of_characters, current_character=None):
         return None
 
     def update_rectangle_position(self, rectangle, amount):
@@ -1777,8 +2375,8 @@ class Board:
         else:
             result = f"{victim.name} died and had the plague."
         self.set_action_log(
-            f"{actor.name} pushed {victim.name} off the back of {cart_label(from_cart)}; {result}",
-            f"{actor.name} used Emerald to push {victim.name} off the back of {cart_label(from_cart)}; {result}",
+            f"{actor.name} pushed {victim.name} from {cart_label(from_cart)} with no open cart behind; {result}",
+            f"{actor.name} used Emerald to push {victim.name} from {cart_label(from_cart)} with no open cart behind; {result}",
         )
 
     def log_jump(self, actor, from_cart, to_cart):
@@ -1858,6 +2456,45 @@ class Board:
             return self.cart2
         elif cartnum == 3:
             return self.cart3
+
+    def getCartPriority(self, cartnum):
+        if cartnum == 1:
+            return self.cart1_priority
+        if cartnum == 2:
+            return self.cart2_priority
+        if cartnum == 3:
+            return self.cart3_priority
+        return None
+
+    def getCartNumByPriority(self, priority):
+        for cart_num in (1, 2, 3):
+            if self.getCartPriority(cart_num) == priority:
+                return cart_num
+        return None
+
+    def getFurthestBehindOpenCart(self, source_cart_num):
+        source_priority = self.getCartPriority(source_cart_num)
+        for priority in range(3, source_priority, -1):
+            cart_num = self.getCartNumByPriority(priority)
+            if cart_num is not None and len(self.getCartInfo(cart_num)) < CART_CAPACITY:
+                return cart_num
+        return None
+
+    def getCartInFront(self, source_cart_num):
+        source_priority = self.getCartPriority(source_cart_num)
+        if source_priority is None or source_priority <= 1:
+            return None
+        return self.getCartNumByPriority(source_priority - 1)
+
+    def remove_from_cart(self, character):
+        cart = self.getCartInfo(character.cart)
+        if cart and character in cart:
+            cart.remove(character)
+
+    def append_to_cart(self, character, cart_num):
+        cart = self.getCartInfo(cart_num)
+        cart.append(character)
+        character.cart = cart_num
 
     def updatePriority(self):
         if (self.cart1_position > self.cart2_position) and (
@@ -2716,6 +3353,198 @@ class Board:
                 )
                 return False
 
+    # Capacity-aware movement rules. These definitions supersede the older
+    # cart-specific push/jump methods above.
+    def choose_push_target(self, character):
+        cart = self.getCartInfo(character.cart)
+        position = cart.index(character)
+        eligible_targets = cart[position + 1 : position + 3]
+        if not eligible_targets:
+            print(
+                f"{character.name} cannot push anyone, as no one is one or two spots behind them."
+            )
+            return None
+
+        if len(eligible_targets) == 1:
+            target = eligible_targets[0]
+            confirm = input(
+                f"Would you like to push {target.name} from {cart_label(character.cart)}? (y/n):"
+            )
+            return target if confirm.lower() == "y" else None
+
+        print("Who would you like to push?")
+        for index, target in enumerate(eligible_targets, 1):
+            print(f"{index}) {target.name}")
+        target_input = input(
+            "Select a player to push (1-2, y for the furthest player behind you, n to cancel):"
+        ).strip().lower()
+        if target_input == "n":
+            return None
+        if target_input == "y":
+            return eligible_targets[-1]
+        try:
+            target_index = int(target_input) - 1
+        except ValueError:
+            print("Please select a valid push target.")
+            return None
+        if target_index < 0 or target_index >= len(eligible_targets):
+            print("Please select a valid push target.")
+            return None
+        return eligible_targets[target_index]
+
+    def handle_pushed_off_cart(self, actor, pushed_character, source_cart_num):
+        print(
+            Fore.RED
+            + Style.BRIGHT
+            + f"{pushed_character.name} has been left behind!"
+            + bcolors.RESET
+        )
+        if pushed_character.plague_status == True:
+            print(
+                Fore.GREEN
+                + Style.BRIGHT
+                + f"{pushed_character.name} had the plague. Well done {actor.name}!"
+                + bcolors.RESET
+            )
+            self.log_push_off_cart(
+                actor, pushed_character, source_cart_num, actor_died=False
+            )
+            self.remove_character(pushed_character)
+        else:
+            print(
+                Fore.RED
+                + Style.BRIGHT
+                + f"{pushed_character.name} did not have the plague. {actor.name} died of shame."
+                + bcolors.RESET
+            )
+            self.log_push_off_cart(
+                actor, pushed_character, source_cart_num, actor_died=True
+            )
+            self.remove_character(pushed_character)
+            if actor in self.list_of_characters:
+                self.remove_character(actor)
+
+    def push(self, character, txt, account_sid, auth_token):
+        self.reset_action_log()
+        source_cart_num = character.cart
+        source_cart = self.getCartInfo(source_cart_num)
+        if not source_cart or character not in source_cart:
+            return False
+
+        pushed_character = self.choose_push_target(character)
+        if pushed_character is None:
+            return False
+
+        if pushed_character != character and pushed_character.hasRemedies():
+            whip = input(
+                f"{pushed_character.name}, would you like to use a remedy to prevent being pushed? (y/n):"
+            )
+            if whip.lower() == "y":
+                if pushed_character.hasWhip():
+                    print(
+                        Fore.GREEN
+                        + Style.BRIGHT
+                        + f"{pushed_character.name} uses a whip to prevent being pushed!"
+                        + bcolors.RESET
+                    )
+                    self.log_whip_block(
+                        pushed_character, character, "push", source_cart_num
+                    )
+                    pushed_character.removeCard(4, txt, account_sid, auth_token)
+                    return True
+                print(f"\nSorry {pushed_character.name}, you don't appear to have a whip!\n")
+
+        destination_cart_num = self.getFurthestBehindOpenCart(source_cart_num)
+        if destination_cart_num is None:
+            self.handle_pushed_off_cart(character, pushed_character, source_cart_num)
+            return True
+
+        self.remove_from_cart(pushed_character)
+        self.append_to_cart(pushed_character, destination_cart_num)
+        print(
+            Fore.RED
+            + Style.BRIGHT
+            + f"{character.name} pushed {pushed_character.name} from "
+            + f"{cart_label(source_cart_num)} to {cart_label(destination_cart_num)}!"
+            + bcolors.RESET
+        )
+        self.log_push_to_cart(
+            character, pushed_character, source_cart_num, destination_cart_num
+        )
+        return True
+
+    def jump(self, character, txt, account_sid, auth_token):
+        self.reset_action_log()
+        source_cart_num = character.cart
+        source_cart = self.getCartInfo(source_cart_num)
+        if not source_cart or character not in source_cart:
+            return False
+        if source_cart.index(character) != 0:
+            print(
+                f"{character.name} needs to be in front of the cart before jumping to the next one!"
+            )
+            return False
+
+        destination_cart_num = self.getCartInFront(source_cart_num)
+        if destination_cart_num is None:
+            print(f"{character.name} is already in the front cart.")
+            return False
+
+        destination_cart = self.getCartInfo(destination_cart_num)
+        for booger in destination_cart:
+            if booger.hasRemedies():
+                denied = input(
+                    f"{booger.name}, would you like to use a whip to prevent {character.name} from joining your cart? (y/n):"
+                )
+                if denied.lower() == "y":
+                    if booger.hasWhip():
+                        print(
+                            Fore.RED
+                            + Style.BRIGHT
+                            + f"{booger.name}, used their whip on {character.name}. Jump DENIED!"
+                            + bcolors.RESET
+                        )
+                        self.log_whip_block(
+                            booger, character, "jump", destination_cart_num
+                        )
+                        booger.removeCard(4, txt, account_sid, auth_token)
+                        return True
+                    print(f"Nice try {booger.name}, you don't own a whip.")
+
+        if len(destination_cart) < CART_CAPACITY:
+            self.remove_from_cart(character)
+            self.append_to_cart(character, destination_cart_num)
+            self.log_jump(character, source_cart_num, destination_cart_num)
+            print(
+                Fore.GREEN
+                + Style.BRIGHT
+                + f"{character.name} jumped from {cart_label(source_cart_num)} "
+                + f"to the back of {cart_label(destination_cart_num)}!"
+                + bcolors.RESET
+            )
+            return True
+
+        swapped_character = destination_cart[-1]
+        source_cart.pop(0)
+        destination_cart[-1] = character
+        character.cart = destination_cart_num
+        source_cart.append(swapped_character)
+        swapped_character.cart = source_cart_num
+        self.set_action_log(
+            f"{character.name} jumped from {cart_label(source_cart_num)} to "
+            f"{cart_label(destination_cart_num)}, swapping with {swapped_character.name}.",
+            f"{character.name} used Emerald to jump from {cart_label(source_cart_num)} to "
+            f"{cart_label(destination_cart_num)}, swapping with {swapped_character.name}.",
+        )
+        print(
+            Fore.GREEN
+            + Style.BRIGHT
+            + f"{character.name} jumped into full {cart_label(destination_cart_num)} "
+            + f"and swapped with {swapped_character.name}!"
+            + bcolors.RESET
+        )
+        return True
+
     def knight_action(self, character, num, actor=None):
         self.reset_action_log()
         actor = actor or character
@@ -3391,6 +4220,9 @@ def parse_args():
     parser.add_argument("-v", "--version", action="store_true", help="Show version")
 
     args = parser.parse_args()
+    args.random_characters = True
+    args.allow_overlapping_characters = False
+    args.character_assignments = None
 
     if args.version:
         print(f"v{get_project_version()}")
@@ -3398,9 +4230,6 @@ def parse_args():
 
     if args.sample and args.mingle:
         parser.error("--sample and --mingle cannot be used together.")
-
-    if not args.players and not (args.sample or args.mingle):
-        parser.error("the following arguments are required: -p/--players")
 
     if args.players and len(args.players) > MAX_PLAYERS:
         parser.error(f"Bristol supports 1-{MAX_PLAYERS} players.")
@@ -3424,17 +4253,7 @@ def parse_args():
 
 
 def introsequence(args, sid, token, registered_users):
-    character_dict = {
-        "Sheriff": "You can view 1 symptom of a player on a different cart.",
-        "Friar": "You can change 1 die to be exactly what you want.",
-        "Outlaw": "You have a 1/3 chance of gaining a free remedy card (happens automatically at the start of your turn).",
-        "Mason": "You can reroll 1 die, then lock one die.",
-        "Chandler": "You can draw a random symptom and choose to replace it with one of your own.",
-        "Countess": "You can draw 2 remedies and keep 1 of them.",
-        "Drunkard": "You can turn 1 die into a rat of your current cart color. You are also immune from mingling whenever you use this.",
-        "Rat King": "You can replace up to two apple dice with a rat of the same cart color.",
-        "Knight": "You can move any player up to the front of their current cart."
-    }
+    character_dict = dict(CHARACTER_TYPES)
     ascii_art = r"""
   ____       _     _        _   __ ____  _____  ___  
  |  _ \     (_)   | |      | | /_ |___ \| ____|/ _ \ 
@@ -3459,10 +4278,15 @@ def introsequence(args, sid, token, registered_users):
                 phone_number=registered_users[args.players[i]],
             )
             list_of_characters[i].generateStartStatus(args)
-            time.sleep(1.5)
 
             if args.character:
-                selected_char, selected_description = random.choice(list(character_dict.items()))
+                if getattr(args, "character_assignments", None):
+                    selected_char = args.character_assignments[i]
+                    selected_description = CHARACTER_TYPES[selected_char]
+                else:
+                    selected_char, selected_description = random.choice(
+                        list(character_dict.items())
+                    )
                 list_of_characters[i].getCharacterType(selected_char, selected_description)
                 if args.test:
                     print(f"\n{list_of_characters[i].name}, you are the {selected_char}: {selected_description}\n")
@@ -3477,13 +4301,13 @@ def introsequence(args, sid, token, registered_users):
                         account_sid=sid,
                         auth_token=token,
                     )
-                    time.sleep(1.5)
                 try:
                     if selected_char == "Outlaw":
                         list_of_characters[i].setOutlaw()
                 except Exception as e:
                     print("\nAn error occurred when using the outlaw.", e,"\n")
-                del character_dict[selected_char]
+                if not getattr(args, "allow_overlapping_characters", False):
+                    character_dict.pop(selected_char, None)
 
             if not args.test:
                 print(
@@ -3496,12 +4320,9 @@ def introsequence(args, sid, token, registered_users):
                     account_sid=sid,
                     auth_token=token,
                 )
-                time.sleep(1.5)
             else:
                 print(f"{args.players[i]}, {list_of_characters[i].plague_statement}\n")
             list_of_characters[i].drawRemedy(args, sid, token)
-            # Must include waiting period, otherwise twilio will throw an error
-            time.sleep(1.5)
         return list_of_characters
 
 
@@ -3591,11 +4412,25 @@ def create_game_window():
         sys.exit(1)
 
 
-def create_game_display(args):
+def run_launch_screen(args):
+    root = create_game_window()
+    launch_screen = LaunchScreen(root, args)
+    configured_args = launch_screen.run()
+    if configured_args is None:
+        try:
+            root.destroy()
+        except tk.TclError:
+            pass
+        sys.exit(0)
+    return configured_args, root
+
+
+def create_game_display(args, root=None):
     if args.no_gui or (args.test and not args.gui):
         return ConsoleGame()
 
-    root = create_game_window()
+    if root is None:
+        root = create_game_window()
     return BristolGame(root)
 
 
@@ -3678,7 +4513,6 @@ def checkifVictorious(board, result, game, args):
                         + bcolors.RESET,
                     )
                     board.remove_character(character)
-                    time.sleep(3)
                     board.displayCarts(game, args)
                 print(f"There are {len(board.list_of_characters)} players remaining")
                 if len(board.list_of_characters) == 0:
@@ -3720,7 +4554,6 @@ def checkifVictorious(board, result, game, args):
                         + bcolors.RESET,
                     )
                     board.remove_character(character)
-                    time.sleep(3)
                     board.displayCarts(game, args)
                 print(f"There are {len(board.list_of_characters)} players remaining")
                 if len(board.list_of_characters) == 0:
@@ -3762,7 +4595,6 @@ def checkifVictorious(board, result, game, args):
                         + bcolors.RESET,
                     )
                     board.remove_character(character)
-                    time.sleep(3)
                     board.displayCarts(game, args)
                 print(f"There are {len(board.list_of_characters)} players remaining")
                 if len(board.list_of_characters) == 0:
@@ -4416,12 +5248,19 @@ def main():
         run_mingle_simulation(args)
         return
 
+    root = None
+    if not args.players:
+        if args.no_gui:
+            print("Players are required when running without the GUI launcher.")
+            sys.exit(2)
+        args, root = run_launch_screen(args)
+
     gameOver = False
 
     registered_users, account_sid, auth_token = load_registration_config(args)
     ensure_sms_dependencies(args)
 
-    game = create_game_display(args)
+    game = create_game_display(args, root=root)
     game.update_finish_line(args.finish)
 
     list_of_characters = introsequence(args, account_sid, auth_token, registered_users)
@@ -4439,7 +5278,6 @@ def main():
         print(f"\n-------------")
         print(f"Action Phase")
         print(f"-------------")
-        time.sleep(1)
         if finalRound:
             print(f"This is the final round!")
         start_player = board.determineStartPlayer()
@@ -4449,7 +5287,6 @@ def main():
 
         print(f"\n{start_player.name} is the starting player!\n")
         game.log_action(f"{start_player.name} starts the round.")
-        time.sleep(1)
         tmp = start_player
         if tmp in list_of_characters:
             list_of_characters.remove(tmp)
@@ -4459,7 +5296,6 @@ def main():
         else:
             print("(R) Reroll, (D) Draw Remedy, (M) Move Character, (U) Use Remedy, (V) View rolled dice, (S) Skip turn \n")
         print(f"\nRolling dice:\n")
-        time.sleep(0.5)
         initial_roll = Dice()
         initial_roll.updateResults()
         print(
@@ -4484,17 +5320,14 @@ def main():
             if character not in list_of_characters:
                 continue
 
+            game.update_order(list_of_characters, character)
             finished = False
             while finished == False:
-                print(
-                    f"\nIt is {character.name}'s turn. What would {character.name} like to do? :"
-                )
                 try:
                     if character.getOutlaw():
                         odds = random.randint(1,3)
                         mariokart = character.getCart()
                         print(f"\n{character.name} is the outlaw, and is attempting to steal a remedy... \n")
-                        time.sleep(3)
                         if odds == mariokart:
                             print(Fore.GREEN + f"Congratulations {character.name}! You got a free remedy\n" + bcolors.RESET)
                             if character.drawRemedy(args, account_sid, auth_token) == True:
@@ -4512,6 +5345,9 @@ def main():
                 except Exception as e:
                     print("\nAn error occurred when using the outlaw.", e,"\n")
 
+                print(
+                    f"\nIt is {character.name}'s turn. What would {character.name} like to do? :"
+                )
                 player_input = input()
                 ability_log_detail = None
 
@@ -5380,14 +6216,12 @@ def main():
         game.update_lock_symbol(4,False, True)
         game.update_lock_symbol(5,False, True)
         game.update_lock_symbol(6,False, True)
-        time.sleep(1)
 
         tingle_mingle = initial_roll.checkMingling()
         if len(tingle_mingle) == 0:
             print("No one is mingling! Very hygenic :)")
             game.log_action("No carts mingled this round.")
         else:
-            time.sleep(1)
             for cart in tingle_mingle:
                 board.mingle(cart, args, account_sid, auth_token)
                 game.log_action(
@@ -5399,11 +6233,8 @@ def main():
         print("-------------------")
         game.log_action("Cart movement phase started.")
 
-        time.sleep(0.5)
         initial_roll.moveCart(1, board)
-        time.sleep(1)
         initial_roll.moveCart(2, board)
-        time.sleep(1)
         initial_roll.moveCart(3, board)
         game.log_action(
             f"Carts moved: blue {board.cart1_position}/{args.finish}, "
